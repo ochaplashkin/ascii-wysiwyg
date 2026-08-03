@@ -1,6 +1,9 @@
 import React, { useRef, useState } from 'react';
 import Quill from 'quill/core';
 import Editor from '/src/components/editor/Editor.jsx';
+import Highlighter from './components/highlighter/Highlighter';
+import ThemePicker from './components/highlighter/ThemePicker';
+
 import './index.css'
 
 const Delta = Quill.import('delta');
@@ -10,11 +13,17 @@ const App = () => {
   const [lastChange, setLastChange] = useState();
   const [readOnly, setReadOnly] = useState(false);
 
+  const [theme, setTheme] = useState('github');
+
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
 
   return (
     <div>
+      <ThemePicker theme={theme} f={(e) => { setTheme(e)} }/>
+      <Highlighter theme={theme}>k
+        {'= Hello, AsciiDoc!\nDoc Writer <doc@example.com>\nAn introduction to http://asciidoc.org[AsciiDoc].\n== First Section\n[source,ruby]\nputs "Hello, World!"'}
+      </Highlighter>
       <Editor
         ref={quillRef}
         readOnly={readOnly}
