@@ -3,6 +3,7 @@ import Quill from 'quill/core';
 import Editor from '/src/components/editor/Editor.jsx';
 import Highlighter from './components/highlighter/Highlighter';
 import ThemePicker from './components/highlighter/ThemePicker';
+import { Stack, Box } from '@mui/material';
 
 import './index.css'
 
@@ -19,12 +20,9 @@ const App = () => {
   const quillRef = useRef();
 
   return (
-    <div>
-      <ThemePicker theme={theme} f={(e) => { setTheme(e)} }/>
-      <Highlighter theme={theme}>k
-        {'= Hello, AsciiDoc!\nDoc Writer <doc@example.com>\nAn introduction to http://asciidoc.org[AsciiDoc].\n== First Section\n[source,ruby]\nputs "Hello, World!"'}
-      </Highlighter>
-      <Editor
+    <Stack direction="row" sx={{ height: '100vh' }}>
+      <Box sx={{ flex: 1}}>
+          <Editor
         ref={quillRef}
         readOnly={readOnly}
         defaultValue={new Delta()
@@ -65,7 +63,14 @@ const App = () => {
         <div className="state-title">Last Change:</div>
         {lastChange ? JSON.stringify(lastChange.ops) : 'Empty'}
       </div>
-    </div>
+      </Box>
+      <Box sx={{ flex: 1}}>
+      <ThemePicker theme={theme} f={(e) => { setTheme(e)} }/>
+          <Highlighter theme={theme}>
+            {'= Hello, AsciiDoc!\nDoc Writer <doc@example.com>\nAn introduction to http://asciidoc.org[AsciiDoc].\n== First Section\n[source,ruby]\nputs "Hello, World!"'}
+          </Highlighter>
+      </Box>
+    </Stack>
   );
 };
 
