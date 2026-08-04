@@ -1,11 +1,9 @@
 import React, { useRef, useState } from 'react';
 import Quill from 'quill/core';
-import Editor from '/src/components/editor/Editor.jsx';
-import Highlighter from './components/highlighter/Highlighter';
-import ThemePicker from './components/highlighter/ThemePicker';
+import Editor from '/src/widgets/editor/Editor';
+import Highlighter from '/src/widgets/highlighter/Highlighter';
+import ThemePicker from '/src/widgets/highlighter/ThemePicker';
 import { Stack, Box } from '@mui/material';
-
-import './index.css'
 
 const Delta = Quill.import('delta');
 
