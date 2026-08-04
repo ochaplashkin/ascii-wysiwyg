@@ -1,5 +1,5 @@
 import React, { forwardRef, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import themeData from './themes.js';
+import themeData from './themes.ts';
 
 interface ThemePickerProps {
   theme: string;
