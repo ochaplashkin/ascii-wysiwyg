@@ -10,6 +10,7 @@ hljs.registerLanguage('asciidoc', asciidoc);
 
 interface HighlighterProps {
   children: React.ReactNode;
+  source?: string;
   theme: 'github' | 'github-dark' | string;
 }
 
@@ -22,16 +23,29 @@ export class Highlighter extends React.PureComponent<HighlighterProps> {
       hljs.highlightElement(this.node);
     }
   }
-
+ 
   componentDidUpdate(prevProps: HighlighterProps) {
+    if (
+      prevProps.children !== this.props.children || 
+      prevProps.source !== this.props.source ||
+      prevProps.theme !== this.props.theme
+    ) {
+      this.highlight();
+    }
+  }
+
+  highlight() {
     if (this.node) {
       this.node.removeAttribute('data-highlighted');
+
+      const rawText = this.props.source || this.node.textContent || '';
+      this.node.textContent = rawText;
       hljs.highlightElement(this.node);
-    } 
+    }
   }
 
   render() {
-    const { children, theme } = this.props;
+    const { children, theme, source} = this.props;
     const actualTheme = theme === 'github' ? github : githubdark;
 
     return (
@@ -39,7 +53,7 @@ export class Highlighter extends React.PureComponent<HighlighterProps> {
         <style>{actualTheme}</style>
         <pre ref={(el) => { this.node = el; }}>
           <code className="asciidoc">
-            {children}
+            {source}
           </code>
         </pre>
       </div>

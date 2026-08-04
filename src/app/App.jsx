@@ -11,6 +11,7 @@ const Delta = Quill.import('delta');
 const App = () => {
   const [range, setRange] = useState();
   const [lastChange, setLastChange] = useState();
+  const [source, setSourceCode] = useState('== Test');
   const [readOnly, setReadOnly] = useState(false);
 
   const [theme, setTheme] = useState('github');
@@ -18,30 +19,25 @@ const App = () => {
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
 
+  const handleTextChange = (delta, oldDelta, sourceCode) => {
+    if (quillRef.current) {
+      const plainText = quillRef.current.getText();
+      setSourceCode(plainText);
+    }
+  };
+
   return (
     <WorkareaLaylout
       leftContent={
         <Editor
-        ref={quillRef}
-        readOnly={readOnly}
-        defaultValue={new Delta()
-          .insert('Hello')
-          .insert('\n', { header: 1 })
-          .insert('Some ')
-          .insert('initial', { bold: true })
-          .insert(' ')
-          .insert('content', { underline: true })
-          .insert('\n')}
-        onSelectionChange={setRange}
-        onTextChange={setLastChange}
-      />
+          ref={quillRef}
+          onTextChange={handleTextChange}
+        />
       }
       rightContent={
         <Container>
-        <ThemePicker theme={theme} f={(e) => { setTheme(e)} }/>
-          <Highlighter theme={theme}>
-            {'= Hello, AsciiDoc!\nDoc Writer <doc@example.com>\nAn introduction to http://asciidoc.org[AsciiDoc].\n== First Section\n[source,ruby]\nputs "Hello, World!"'}
-          </Highlighter>
+          <ThemePicker theme={theme} f={(e) => { setTheme(e)} }/>
+          <Highlighter theme={theme} source={source}></Highlighter>
         </Container>
       }
     />
