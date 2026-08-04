@@ -3,7 +3,8 @@ import Quill from 'quill/core';
 import Editor from '/src/widgets/editor/Editor';
 import Highlighter from '/src/widgets/highlighter/Highlighter';
 import ThemePicker from '/src/widgets/highlighter/ThemePicker';
-import { Stack, Box } from '@mui/material';
+import WorkareaLaylout from '/src/pages/WorkareaPage'
+import { Container } from '@mui/material';
 
 const Delta = Quill.import('delta');
 
@@ -18,9 +19,9 @@ const App = () => {
   const quillRef = useRef();
 
   return (
-    <Stack direction="row" sx={{ height: '100vh' }}>
-      <Box sx={{ flex: 1}}>
-          <Editor
+    <WorkareaLaylout
+      leftContent={
+        <Editor
         ref={quillRef}
         readOnly={readOnly}
         defaultValue={new Delta()
@@ -34,41 +35,16 @@ const App = () => {
         onSelectionChange={setRange}
         onTextChange={setLastChange}
       />
-      <div className="controls">
-        <label>
-          Read Only:{' '}
-          <input
-            type="checkbox"
-            value={readOnly}
-            onChange={(e) => setReadOnly(e.target.checked)}
-          />
-        </label>
-        <button
-          className="controls-right"
-          type="button"
-          onClick={() => {
-            alert(quillRef.current?.getLength());
-          }}
-        >
-          Get Content Length
-        </button>
-      </div>
-      <div className="state">
-        <div className="state-title">Current Range:</div>
-        {range ? JSON.stringify(range) : 'Empty'}
-      </div>
-      <div className="state">
-        <div className="state-title">Last Change:</div>
-        {lastChange ? JSON.stringify(lastChange.ops) : 'Empty'}
-      </div>
-      </Box>
-      <Box sx={{ flex: 1}}>
-      <ThemePicker theme={theme} f={(e) => { setTheme(e)} }/>
+      }
+      rightContent={
+        <Container>
+        <ThemePicker theme={theme} f={(e) => { setTheme(e)} }/>
           <Highlighter theme={theme}>
             {'= Hello, AsciiDoc!\nDoc Writer <doc@example.com>\nAn introduction to http://asciidoc.org[AsciiDoc].\n== First Section\n[source,ruby]\nputs "Hello, World!"'}
           </Highlighter>
-      </Box>
-    </Stack>
+        </Container>
+      }
+    />
   );
 };
 
