@@ -57,6 +57,16 @@ const App = () => {
       .replaceAll('</h2>', '\n')
       .replaceAll('<h3>', '\n=== ')
       .replaceAll('</h3>', '\n')
+      .replaceAll('<strong>', '**')
+      .replaceAll('</strong>', '**')
+      .replaceAll('<em>', '__')
+      .replaceAll('</em>', '__')
+      .replaceAll('<s>', '+++<s>')
+      .replaceAll('</s>', '</s>+++')
+      .replaceAll('<u>', '+++<u>')
+      .replaceAll('</u>', '</u>+++')
+      .replaceAll('<blockquote>', '\n> ')
+      .replaceAll('</blockquote>', '\n')
   }
 
   return (
