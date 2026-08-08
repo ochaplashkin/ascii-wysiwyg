@@ -53,7 +53,9 @@ const Editor = forwardRef<Quill | null, EditorProps>(
 
         // [{ 'size': ['small', false, 'large', 'huge'] }],  // custom dropdown
         [{ 'header': [1, 2, 3, false] }],
-        ['link']
+        ['bold', 'italic', 'underline', 'strike'],
+        ['link'],
+        ['blockquote']
 
         // [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
         // [{ 'font': [] }],
