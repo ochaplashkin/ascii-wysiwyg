@@ -21,10 +21,43 @@ const App = () => {
 
   const handleTextChange = (delta, oldDelta, sourceCode) => {
     if (quillRef.current) {
-      const plainText = quillRef.current.getText();
-      setSourceCode(plainText);
+      const plainText = quillRef.current.getSemanticHTML();
+      setSourceCode(processHMTLtoASCII(plainText));
     }
   };
+
+  const parseAnchor = (html) => {
+    // <a href="https://google.com" rel="noopener noreferrer" target="_blank">foo</a>
+    // url -> https://google.com
+    // text -> foo
+    // TODO: only works the first time
+    const regex = /<a\s+[^>]*href="([^"]*)"[^>]*>([^<]*)<\/a>/i;
+    const match = html.match(regex);
+    if (match) {
+        return {
+            url: match[1],
+            text: match[2]
+        }
+    }
+    return {};
+}
+
+  const processHMTLtoASCII = (html) => {
+    const {url, text} = parseAnchor(html)
+    if (url && text){
+      html = html.replaceAll(/<a[^>]*>(.*?)<\/a>/gi, `${url}[${text}]`)
+    }
+
+    return html
+      .replaceAll('<p>',  '\n')
+      .replaceAll('</p>', '\n')
+      .replaceAll('<h1>', '\n= ')
+      .replaceAll('</h1>', '\n')
+      .replaceAll('<h2>', '\n== ')
+      .replaceAll('</h2>', '\n')
+      .replaceAll('<h3>', '\n=== ')
+      .replaceAll('</h3>', '\n')
+  }
 
   return (
     <WorkareaLaylout
