@@ -1,9 +1,14 @@
 import React, { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
 import Quill from 'quill';
+import QuillTableBetter from "quill-table-better";
+
 
 import 'quill/dist/quill.snow.css';
 import './styles.css';
+import "quill-table-better/dist/quill-table-better.css";
 
+
+Quill.register({ "modules/table-better": QuillTableBetter }, true);
 
 
 interface EditorProps {
@@ -55,13 +60,14 @@ const Editor = forwardRef<Quill | null, EditorProps>(
         [{ 'header': [1, 2, 3, false] }],
         ['bold', 'italic', 'underline', 'strike'],
         ['link'],
-        ['blockquote']
+        ['blockquote'],
 
         // [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
         // [{ 'font': [] }],
         // [{ 'align': [] }],
 
         // ['clean']                                         // remove formatting button
+        ["table-better"] // Table tool here
       ];
       
       const options: any = {
@@ -69,11 +75,27 @@ const Editor = forwardRef<Quill | null, EditorProps>(
         modules: {
           toolbar: {
             container: toolbarOptions
+          },
+          table: false,
+          "table-better": {
+            language: "ru_RU",
+            menus: [
+              "column",
+              "row",
+              "merge",
+              "table",
+              "cell",
+              "wrap",
+              "copy",
+              "delete",
+            ],
+            toolbarTable: true,
           }
         }
       };
 
       const quill = new Quill(editorContainer, options);
+      
 
       if (ref) {
         if (typeof ref === 'function') {

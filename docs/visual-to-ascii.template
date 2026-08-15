@@ -1,13 +1,62 @@
+Heading 0
 = Document Title (Level 0)
 
+Heading 1
 == Level 1 Section Title
 
+Heading 2
 === Level 2 Section Title
 
+Heading 3
 ==== Level 3 Section Title
 
+Heading 4
 ===== Level 4 Section Title
 
+Heading 5
 ====== Level 5 Section Title
 
 == Another Level 1 Section Title
+
+
+
+Tables
+
+<table style="width: 100%" class="ql-table-better">
+    <tbody>
+    <tr>
+        <td data-row="row-fxvh">
+            <p class="ql-table-block" data-cell="cell-rrkx">
+                1
+            <br>
+        </td>
+        <td data-row="row-fxvh">
+            <p class="ql-table-block" data-cell="cell-zm38">
+                2
+            <br>
+        </td>
+    </tr>
+    <tr>
+        <td data-row="row-8l5s">
+            <p class="ql-table-block" data-cell="cell-8568">
+                3
+            <br>
+        </td>
+        <td data-row="row-8l5s">
+            <p class="ql-table-block" data-cell="cell-uuk4">
+                4
+            <br>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+
+[cols="1,1"]
+|===
+|1
+|2
+
+|3
+|4
+|===
