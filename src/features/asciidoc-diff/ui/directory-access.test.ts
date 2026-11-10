@@ -1,0 +1,207 @@
+// @vitest-environment jsdom
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { canPickDirectory, pickLocalDirectory } from './directory-access.js';
+
+interface FakeFileHandle {
+  kind: 'file';
+  name: string;
+  getFile: () => Promise<File>;
+}
+
+interface FakeDirectoryHandle {
+  kind: 'directory';
+  name: string;
+  values: () => AsyncIterable<FakeFileHandle | FakeDirectoryHandle>;
+}
+
+type FakeEntry = FakeFileHandle | FakeDirectoryHandle;
+
+const fakeFile = (name: string, text: string): FakeFileHandle => ({
+  kind: 'file',
+  name,
+  getFile: async () => ({ text: async () => text }) as unknown as File,
+});
+
+const fakeDirectory = (
+  name: string,
+  entries: FakeEntry[],
+): FakeDirectoryHandle => ({
+  kind: 'directory',
+  name,
+  values: async function* values() {
+    yield* entries;
+  },
+});
+
+const unreadableDirectory = (name: string): FakeDirectoryHandle => ({
+  kind: 'directory',
+  name,
+  values: async function* values() {
+    throw new Error('permission lost');
+  },
+});
+
+const installPicker = (
+  picker: (options?: { mode?: 'read' }) => Promise<FakeDirectoryHandle>,
+) => {
+  Object.defineProperty(window, 'showDirectoryPicker', {
+    configurable: true,
+    writable: true,
+    value: picker,
+  });
+};
+
+const removePicker = () => {
+  delete (window as unknown as { showDirectoryPicker?: unknown })
+    .showDirectoryPicker;
+};
+
+afterEach(() => {
+  removePicker();
+});
+
+describe('pickLocalDirectory', () => {
+  it('walks nested folders and keeps only comparable text files', async () => {
+    const intro = fakeFile('intro.adoc', '= Intro');
+    const picker = vi.fn(async () =>
+      fakeDirectory('docs', [
+        intro,
+        fakeDirectory('guide', [
+          fakeFile('part.ADOC', '= Part'),
+          fakeFile('cover.png', 'binary'),
+        ]),
+        fakeFile('notes.txt', 'notes'),
+        fakeFile('README.md', '# readme'),
+      ]),
+    );
+    installPicker(picker);
+
+    const result = await pickLocalDirectory();
+
+    expect(picker).toHaveBeenCalledWith({ mode: 'read' });
+    expect(result).not.toBeNull();
+    expect(result?.name).toBe('docs');
+    expect(result?.truncated).toBe(false);
+    expect(result?.files.map((file) => file.path)).toEqual([
+      'intro.adoc',
+      'guide/part.ADOC',
+      'notes.txt',
+      'README.md',
+    ]);
+    expect(await result?.files[0]?.read()).toBe('= Intro');
+  });
+
+  it('skips hidden entries, dependency folders and unsupported files', async () => {
+    installPicker(async () =>
+      fakeDirectory('project', [
+        fakeFile('.env.adoc', 'hidden'),
+        fakeDirectory('.git', [fakeFile('config.adoc', 'git config')]),
+        fakeDirectory('node_modules', [fakeFile('pkg.adoc', 'dep')]),
+        fakeDirectory('vendor', [fakeFile('lib.adoc', 'vendor')]),
+        fakeDirectory('content', [fakeFile('doc.adoc', 'ok')]),
+        fakeFile('build.log', 'log'),
+      ]),
+    );
+
+    const result = await pickLocalDirectory();
+
+    expect(result?.files.map((file) => file.path)).toEqual(['content/doc.adoc']);
+  });
+
+  it('keeps sibling files when a subfolder cannot be read', async () => {
+    installPicker(async () =>
+      fakeDirectory('root', [
+        fakeFile('first.adoc', 'first'),
+        unreadableDirectory('broken'),
+        fakeFile('last.adoc', 'last'),
+      ]),
+    );
+
+    const result = await pickLocalDirectory();
+
+    expect(result?.files.map((file) => file.path)).toEqual([
+      'first.adoc',
+      'last.adoc',
+    ]);
+  });
+
+  it('returns null when the user cancels the dialog', async () => {
+    const abort = Object.assign(new Error('cancelled'), { name: 'AbortError' });
+    installPicker(async () => {
+      throw abort;
+    });
+
+    await expect(pickLocalDirectory()).resolves.toBeNull();
+  });
+
+  it('keeps the fallback input alive while the user picks a folder', async () => {
+    vi.useFakeTimers();
+
+    try {
+      const pending = pickLocalDirectory();
+      const input = document.querySelector<HTMLInputElement>(
+        'input[webkitdirectory]',
+      );
+      if (!input) throw new Error('folder input was not created');
+
+      // A browser dialog from a previous step can return the focus while the
+      // folder input is still open. That must not cancel the selection.
+      window.dispatchEvent(new Event('focus'));
+      vi.advanceTimersByTime(5000);
+
+      expect(document.querySelector('input[webkitdirectory]')).toBe(input);
+
+      const file = new File(['= Late'], 'late.adoc');
+      Object.defineProperty(file, 'webkitRelativePath', {
+        value: 'docs/late.adoc',
+      });
+      Object.defineProperty(input, 'files', {
+        configurable: true,
+        value: [file],
+      });
+      input?.dispatchEvent(new Event('change'));
+
+      await expect(pending).resolves.toEqual({
+        name: 'docs',
+        files: [
+          expect.objectContaining({ path: 'late.adoc', name: 'late.adoc' }),
+        ],
+        truncated: false,
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('returns null when the fallback folder dialog is dismissed', async () => {
+    const pending = pickLocalDirectory();
+    const input = document.querySelector<HTMLInputElement>(
+      'input[webkitdirectory]',
+    );
+
+    input?.dispatchEvent(new Event('cancel'));
+
+    await expect(pending).resolves.toBeNull();
+  });
+
+  it('stops after the file limit and marks the result as truncated', async () => {
+    const entries = Array.from({ length: 1600 }, (_, index) =>
+      fakeFile(`file-${index}.adoc`, ''),
+    );
+    installPicker(async () => fakeDirectory('many', entries));
+
+    const result = await pickLocalDirectory();
+
+    expect(result?.files).toHaveLength(1500);
+    expect(result?.truncated).toBe(true);
+  });
+});
+
+describe('canPickDirectory', () => {
+  it('reports the File System Access API when it is available', () => {
+    expect(canPickDirectory()).toBe(false);
+    installPicker(async () => fakeDirectory('docs', []));
+    expect(canPickDirectory()).toBe(true);
+  });
+});

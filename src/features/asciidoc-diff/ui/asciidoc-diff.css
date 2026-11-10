@@ -1,0 +1,1116 @@
+.adoc-diff {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: #ffffff;
+  color: #1f2328;
+}
+
+.adoc-diff__toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 20px;
+  background: #f6f8fa;
+  border-bottom: 1px solid #d0d7de;
+}
+
+.adoc-diff__title {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.adoc-diff__legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 12px;
+  color: #57606a;
+}
+
+.adoc-diff__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.adoc-diff__legend-item::before {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  content: '';
+}
+
+.adoc-diff__legend-item--removed::before {
+  background: #ffebe9;
+  border: 1px solid #ff8182;
+}
+
+.adoc-diff__legend-item--added::before {
+  background: #e6ffec;
+  border: 1px solid #4ac26b;
+}
+
+.adoc-diff__viewport {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  background: #ffffff;
+}
+
+.adoc-diff__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.adoc-diff__head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 8px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #57606a;
+  background: #f6f8fa;
+  border-bottom: 1px solid #d0d7de;
+}
+
+.adoc-diff__head:nth-child(2) {
+  border-left: 1px solid #d0d7de;
+}
+
+.adoc-diff__cell {
+  min-width: 0;
+  padding: 14px 20px;
+  border-bottom: 1px solid #eaeef2;
+}
+
+.adoc-diff__cell--left {
+  border-right: 1px solid #d0d7de;
+}
+
+.adoc-diff__cell--removed {
+  background: #ffebe9;
+  box-shadow: inset 3px 0 0 #ff8182;
+}
+
+.adoc-diff__cell--added {
+  background: #e6ffec;
+  box-shadow: inset 3px 0 0 #4ac26b;
+}
+
+.adoc-diff__cell--right.adoc-diff__cell--added {
+  box-shadow: inset -3px 0 0 #4ac26b;
+}
+
+/* A modified block is a pair, not an insertion/deletion: keep the tint light
+   so word-level highlights inside it stay readable. */
+.adoc-diff__cell--left.adoc-diff__cell--modified {
+  background: #fff7f7;
+  box-shadow: inset 3px 0 0 #ffb3b4;
+}
+
+.adoc-diff__cell--right.adoc-diff__cell--modified {
+  background: #f4fdf6;
+  box-shadow: inset -3px 0 0 #8bdb9f;
+}
+
+.adoc-diff__cell--empty {
+  background-color: #f6f8fa;
+  background-image: repeating-linear-gradient(
+    -45deg,
+    transparent 0,
+    transparent 6px,
+    rgba(31, 35, 40, 0.035) 6px,
+    rgba(31, 35, 40, 0.035) 12px
+  );
+}
+
+.adoc-diff__status {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 160px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 14px;
+  color: #57606a;
+}
+
+.adoc-diff__status--error {
+  padding: 24px;
+  color: #cf222e;
+  text-align: center;
+}
+
+/* Rendered AsciiDoc content. The stylesheet is intentionally scoped to
+   .adoc-rendered so it never affects the editor and the rest of the app. */
+
+.adoc-rendered {
+  font-family: Georgia, 'Times New Roman', 'DejaVu Serif', serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.82);
+  overflow-wrap: anywhere;
+}
+
+.adoc-rendered > *:first-child {
+  margin-top: 0;
+}
+
+.adoc-rendered > *:last-child {
+  margin-bottom: 0;
+}
+
+.adoc-rendered h1,
+.adoc-rendered h2,
+.adoc-rendered h3,
+.adoc-rendered h4,
+.adoc-rendered h5,
+.adoc-rendered h6 {
+  margin: 0 0 0.5em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-weight: 300;
+  line-height: 1.25;
+  color: #ba3925;
+}
+
+.adoc-rendered h1 {
+  font-size: 1.9em;
+}
+
+.adoc-rendered h2 {
+  font-size: 1.45em;
+}
+
+.adoc-rendered h3 {
+  font-size: 1.2em;
+}
+
+.adoc-rendered h4,
+.adoc-rendered h5,
+.adoc-rendered h6 {
+  font-size: 1.05em;
+}
+
+.adoc-rendered p {
+  margin: 0 0 1em;
+}
+
+.adoc-rendered a {
+  color: #2156a5;
+  text-decoration: underline;
+}
+
+.adoc-rendered ul,
+.adoc-rendered ol {
+  margin: 0 0 1em 1.5em;
+  padding: 0;
+}
+
+.adoc-rendered li {
+  margin-bottom: 0.2em;
+}
+
+.adoc-rendered li p {
+  margin-bottom: 0.25em;
+}
+
+.adoc-rendered blockquote {
+  margin: 0 0 1em;
+  padding: 0.4em 1em;
+  color: rgba(0, 0, 0, 0.7);
+  border-left: 3px solid #d0d7de;
+}
+
+.adoc-rendered .quoteblock .title,
+.adoc-rendered .admonitionblock .title,
+.adoc-rendered .listingblock .title,
+.adoc-rendered .literalblock .title,
+.adoc-rendered .exampleblock .title,
+.adoc-rendered .tableblock .title,
+.adoc-rendered .imageblock .title,
+.adoc-rendered .sidebarblock .title {
+  margin-bottom: 0.35em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 0.88em;
+  font-style: italic;
+  color: #7a2518;
+}
+
+.adoc-rendered .quoteblock .paragraph:last-child p {
+  margin-bottom: 0;
+}
+
+.adoc-rendered table.tableblock {
+  width: 100%;
+  margin: 0 0 1em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 0.92em;
+  border-collapse: collapse;
+}
+
+.adoc-rendered table.tableblock th,
+.adoc-rendered table.tableblock td {
+  padding: 0.45em 0.65em;
+  text-align: left;
+  vertical-align: top;
+  border: 1px solid #d0d7de;
+}
+
+.adoc-rendered table.tableblock th {
+  font-weight: 600;
+  background: #f6f8fa;
+}
+
+.adoc-rendered pre {
+  margin: 0 0 1em;
+  padding: 0.75em 1em;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  font-size: 0.82em;
+  line-height: 1.5;
+  color: #1f2328;
+  white-space: pre;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+}
+
+.adoc-rendered code {
+  padding: 0.1em 0.3em;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  font-size: 0.88em;
+  background: rgba(175, 184, 193, 0.2);
+  border-radius: 4px;
+}
+
+.adoc-rendered pre code {
+  padding: 0;
+  font-size: 1em;
+  background: none;
+}
+
+.adoc-rendered .admonitionblock {
+  margin: 0 0 1em;
+  padding: 0.6em 0.8em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 0.92em;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-left: 4px solid #0969da;
+  border-radius: 4px;
+}
+
+.adoc-rendered .admonitionblock table {
+  width: auto;
+  margin: 0;
+  border-collapse: collapse;
+}
+
+.adoc-rendered .admonitionblock td {
+  padding: 0;
+  vertical-align: top;
+  border: none;
+}
+
+.adoc-rendered .admonitionblock td.icon {
+  width: 1%;
+  padding-right: 0.7em;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #0969da;
+}
+
+.adoc-rendered .admonitionblock td.content > .paragraph:last-child p {
+  margin-bottom: 0;
+}
+
+.adoc-rendered .admonitionblock.tip {
+  border-left-color: #1a7f37;
+}
+
+.adoc-rendered .admonitionblock.tip td.icon {
+  color: #1a7f37;
+}
+
+.adoc-rendered .admonitionblock.warning,
+.adoc-rendered .admonitionblock.caution {
+  border-left-color: #9a6700;
+}
+
+.adoc-rendered .admonitionblock.warning td.icon,
+.adoc-rendered .admonitionblock.caution td.icon {
+  color: #9a6700;
+}
+
+.adoc-rendered .admonitionblock.important {
+  border-left-color: #cf222e;
+}
+
+.adoc-rendered .admonitionblock.important td.icon {
+  color: #cf222e;
+}
+
+.adoc-rendered .imageblock {
+  margin-bottom: 1em;
+}
+
+.adoc-rendered .imageblock img {
+  max-width: 100%;
+  height: auto;
+}
+
+.adoc-rendered hr {
+  margin: 1em 0;
+  border: 0;
+  border-top: 1px solid #d0d7de;
+}
+
+.adoc-rendered .sectionbody > *:last-child {
+  margin-bottom: 0;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Toolbar and source management                                             */
+/* ------------------------------------------------------------------------- */
+
+.adoc-diff__toolbar {
+  flex-wrap: wrap;
+  row-gap: 8px;
+  padding: 8px 16px;
+}
+
+.adoc-diff__toolbar-group {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.adoc-diff__source-button {
+  gap: 6px;
+  max-width: 260px;
+  text-transform: none;
+}
+
+.adoc-diff__source-kind {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #57606a;
+}
+
+.adoc-diff__source-button-name {
+  max-width: 170px;
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adoc-diff__swap-button {
+  min-width: 34px;
+  padding-right: 0;
+  padding-left: 0;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.adoc-diff__stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 12px;
+  color: #57606a;
+}
+
+.adoc-diff__stats--muted {
+  opacity: 0.65;
+}
+
+.adoc-diff__stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+
+.adoc-diff__stat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.adoc-diff__stat-dot--modified {
+  background: linear-gradient(90deg, #ff8182 50%, #4ac26b 50%);
+}
+
+.adoc-diff__stat-dot--added {
+  background: #4ac26b;
+}
+
+.adoc-diff__stat-dot--removed {
+  background: #ff8182;
+}
+
+.adoc-diff__switch {
+  margin: 0;
+}
+
+.adoc-diff__switch-label {
+  font-size: 12px;
+}
+
+.adoc-diff__counter.Mui-disabled {
+  color: rgba(0, 0, 0, 0.6);
+  -webkit-text-fill-color: rgba(0, 0, 0, 0.6);
+}
+
+.adoc-diff__alert {
+  margin: 8px 16px 0;
+}
+
+.adoc-diff__alert .MuiAlert-message {
+  white-space: pre-line;
+}
+
+.adoc-diff__warning-list {
+  max-height: 92px;
+  margin: 6px 0 0;
+  padding-left: 18px;
+  overflow: auto;
+}
+
+.adoc-diff__warning-list li {
+  margin-bottom: 3px;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Diff grid additions                                                       */
+/* ------------------------------------------------------------------------- */
+
+.adoc-diff__grid {
+  min-width: 760px;
+}
+
+.adoc-diff__group {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 9px 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 12px;
+  color: #57606a;
+  background: #f6f8fa;
+  border-bottom: 1px solid #eaeef2;
+}
+
+.adoc-diff__cell {
+  position: relative;
+}
+
+.adoc-diff__cell--active {
+  outline: 2px solid #0969da;
+  outline-offset: -2px;
+}
+
+.adoc-diff__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  clip-path: inset(50%);
+}
+
+.adoc-rendered del.adoc-word--del {
+  padding: 0.05em 0.12em;
+  color: #82071e;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  background: #ffc1c0;
+  border-radius: 2px;
+}
+
+.adoc-rendered ins.adoc-word--ins {
+  padding: 0.05em 0.12em;
+  color: #0a3622;
+  text-decoration: none;
+  background: #a6f4b8;
+  border-radius: 2px;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Source dialog                                                             */
+/* ------------------------------------------------------------------------- */
+
+.adoc-diff__source-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.adoc-diff__source-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.adoc-diff__source-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.adoc-diff__source-meta {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 11px;
+  color: #57606a;
+  white-space: nowrap;
+}
+
+.adoc-diff__source-name,
+.adoc-diff__source-textarea {
+  width: 100%;
+  padding: 7px 10px;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #1f2328;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+}
+
+.adoc-diff__source-name {
+  padding: 5px 9px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+}
+
+.adoc-diff__source-textarea {
+  min-height: 44vh;
+  resize: vertical;
+}
+
+.adoc-diff__source-name:focus,
+.adoc-diff__source-textarea:focus {
+  outline: 2px solid #0969da;
+  outline-offset: -1px;
+}
+
+/* Let the editors fill the dialog instead of leaving a large empty area. */
+.adoc-diff__source-dialog .MuiDialogContent-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.adoc-diff__source-dialog .adoc-diff__source-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.adoc-diff__source-dialog .adoc-diff__source-panel {
+  min-height: 0;
+}
+
+.adoc-diff__source-dialog .adoc-diff__source-textarea {
+  flex: 1 1 auto;
+  height: auto;
+  min-height: 0;
+  resize: none;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Directory sidebar                                                         */
+/* ------------------------------------------------------------------------- */
+
+.adoc-diff__body {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.adoc-diff__main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.adoc-diff__sidebar {
+  display: flex;
+  flex: 0 0 286px;
+  flex-direction: column;
+  min-height: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  background: #f6f8fa;
+  border-right: 1px solid #d0d7de;
+}
+
+.adoc-diff__sidebar-head {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #d0d7de;
+}
+
+.adoc-diff__sidebar-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  color: #57606a;
+  text-transform: uppercase;
+}
+
+.adoc-diff__sidebar-pick {
+  flex: 0 0 auto;
+  gap: 6px;
+  font-size: 12px;
+  text-transform: none;
+}
+
+.adoc-diff__sidebar-dir {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px 3px;
+  min-width: 0;
+}
+
+.adoc-diff__sidebar-dir-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: #bf8700;
+}
+
+.adoc-diff__sidebar-dir-name {
+  flex: 1 1 auto;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f2328;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adoc-diff__sidebar-dir-meta {
+  flex: 0 0 auto;
+  font-size: 11px;
+  color: #57606a;
+  white-space: nowrap;
+}
+
+.adoc-diff__sidebar-search {
+  flex: 0 0 auto;
+  margin: 7px 12px 8px;
+  padding: 5px 9px;
+  font-family: inherit;
+  font-size: 12px;
+  color: #1f2328;
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+}
+
+.adoc-diff__sidebar-search:focus {
+  outline: 2px solid #0969da;
+  outline-offset: -1px;
+}
+
+.adoc-diff__sidebar-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 6px 6px;
+  overflow: auto;
+}
+
+.adoc-diff__tree {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.adoc-diff__tree-dir,
+.adoc-diff__file-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 5px 8px;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: #1f2328;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.adoc-diff__tree-dir {
+  font-weight: 600;
+}
+
+.adoc-diff__tree-dir:hover,
+.adoc-diff__file-row:hover {
+  background: #eaeef2;
+}
+
+.adoc-diff__tree-dir:focus-visible,
+.adoc-diff__file-row:focus-visible {
+  outline: 2px solid #0969da;
+  outline-offset: -2px;
+}
+
+.adoc-diff__tree-chevron {
+  flex: 0 0 auto;
+  width: 10px;
+  font-size: 9px;
+  color: #57606a;
+}
+
+.adoc-diff__tree-name,
+.adoc-diff__file-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adoc-diff__file-row--left {
+  background: #ddf4ff;
+}
+
+.adoc-diff__file-row--right {
+  background: #fbefff;
+}
+
+.adoc-diff__file-row--left:hover {
+  background: #cbeaff;
+}
+
+.adoc-diff__file-row--right:hover {
+  background: #f2d9ff;
+}
+
+.adoc-diff__file-slot {
+  flex: 0 0 auto;
+  min-width: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  color: #ffffff;
+  text-align: center;
+  border-radius: 3px;
+}
+
+.adoc-diff__file-slot--left {
+  background: #0969da;
+}
+
+.adoc-diff__file-slot--right {
+  background: #8250df;
+}
+
+.adoc-diff__file-current {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  background: #2da44e;
+  border-radius: 50%;
+}
+
+.adoc-diff__sidebar-note {
+  margin: 8px 6px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #57606a;
+}
+
+.adoc-diff__sidebar-empty {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 12px;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #57606a;
+}
+
+.adoc-diff__sidebar-empty p {
+  margin: 0;
+}
+
+.adoc-diff__sidebar-hint {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #6e7781;
+}
+
+.adoc-diff__sidebar-warning {
+  color: #9a6700;
+}
+
+.adoc-diff__sidebar-alert {
+  flex: 0 0 auto;
+  margin: 6px 10px;
+  font-size: 12px;
+}
+
+.adoc-diff__sidebar-footer {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  gap: 7px;
+  padding: 9px 12px 10px;
+  border-top: 1px solid #d0d7de;
+}
+
+.adoc-diff__slots {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.adoc-diff__slot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 2px 4px;
+  background: #ffffff;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+}
+
+.adoc-diff__slot-tag {
+  flex: 0 0 auto;
+  min-width: 16px;
+  padding: 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  color: #ffffff;
+  text-align: center;
+  border-radius: 3px;
+}
+
+.adoc-diff__slot--left .adoc-diff__slot-tag {
+  background: #0969da;
+}
+
+.adoc-diff__slot--right .adoc-diff__slot-tag {
+  background: #8250df;
+}
+
+.adoc-diff__slot-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 11.5px;
+  color: #1f2328;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adoc-diff__slot:not([data-filled]) .adoc-diff__slot-text {
+  color: #8c959f;
+}
+
+.adoc-diff__slot-clear {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  color: #57606a;
+  background: none;
+  border: 0;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.adoc-diff__slot-clear:hover {
+  color: #cf222e;
+  background: #ffebe9;
+}
+
+.adoc-diff__sidebar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.adoc-diff__swap-button {
+  min-width: 34px;
+  padding-right: 0;
+  padding-left: 0;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.adoc-diff__compare-button {
+  text-transform: none;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Responsive layout                                                         */
+/* ------------------------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .adoc-diff__sidebar {
+    flex-basis: 248px;
+  }
+}
+
+@media (max-width: 960px) {
+  .adoc-diff__grid {
+    grid-template-columns: minmax(0, 1fr);
+    min-width: 0;
+  }
+
+  .adoc-diff__head {
+    display: none;
+  }
+
+  .adoc-diff__cell {
+    padding: 12px 16px;
+  }
+
+  .adoc-diff__cell--left {
+    border-right: 0;
+  }
+
+  .adoc-diff__cell::before {
+    display: block;
+    margin-bottom: 6px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+      sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #57606a;
+    text-transform: uppercase;
+  }
+
+  .adoc-diff__cell--left::before {
+    content: 'Оригинал';
+  }
+
+  .adoc-diff__cell--right::before {
+    content: 'Изменённый';
+  }
+
+  .adoc-diff__group {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 760px) {
+  .adoc-diff__body {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .adoc-diff__sidebar {
+    flex: 0 0 auto;
+    max-height: none;
+    border-right: 0;
+    border-bottom: 1px solid #d0d7de;
+  }
+
+  /* Keep the file tree usable on short preview panels: the sidebar grows
+     with its content, the tree scrolls on its own, and the footer with the
+     slots and the compare action stays visible. */
+  .adoc-diff__sidebar-scroll {
+    max-height: 34vh;
+  }
+
+  .adoc-diff__slots {
+    flex-direction: row;
+  }
+
+  .adoc-diff__slot {
+    flex: 1 1 0;
+  }
+
+  .adoc-diff__sidebar-hint {
+    display: none;
+  }
+
+  .adoc-diff__main {
+    flex: 0 0 auto;
+    min-height: 60vh;
+  }
+
+  .adoc-diff__source-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .adoc-diff__source-textarea {
+    min-height: 32vh;
+  }
+
+  .adoc-diff__source-dialog .MuiDialogContent-root {
+    display: block;
+  }
+
+  .adoc-diff__source-dialog .adoc-diff__source-textarea {
+    height: 32vh;
+    min-height: 32vh;
+  }
+}

@@ -1,25 +1,55 @@
-import React, { useRef, useState } from 'react';
-import Quill from 'quill/core';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import Editor from '/src/widgets/editor/Editor';
 import Highlighter from '/src/widgets/highlighter/Highlighter';
 import ThemePicker from '/src/widgets/highlighter/ThemePicker';
 import WorkareaLaylout from '/src/pages/WorkareaPage'
-import { Container } from '@mui/material';
+import { Box, CircularProgress, Container, Tab, Tabs } from '@mui/material';
 
-const Delta = Quill.import('delta');
+const AsciiDocDiffPage = lazy(
+  () => import('../features/asciidoc-diff/ui/AsciiDocDiffPage'),
+);
 
 const App = () => {
-  const [range, setRange] = useState();
-  const [lastChange, setLastChange] = useState();
   const [source, setSourceCode] = useState('== Test');
-  const [readOnly, setReadOnly] = useState(false);
 
   const [theme, setTheme] = useState('github');
+  const [tab, setTab] = useState(() =>
+    window.location.hash === '#diff' ? 1 : 0,
+  );
+  const [diffVisited, setDiffVisited] = useState(
+    () => window.location.hash === '#diff',
+  );
 
   // Use a ref to access the quill instance directly
   const quillRef = useRef();
 
-  const handleTextChange = (delta, oldDelta, sourceCode) => {
+  useEffect(() => {
+    const syncTabWithHash = () => {
+      const nextTab = window.location.hash === '#diff' ? 1 : 0;
+      setTab(nextTab);
+      if (nextTab === 1) {
+        setDiffVisited(true);
+      }
+    };
+
+    window.addEventListener('hashchange', syncTabWithHash);
+    return () => window.removeEventListener('hashchange', syncTabWithHash);
+  }, []);
+
+  const handleTabChange = (_event, value) => {
+    setTab(value);
+    if (value === 1) {
+      setDiffVisited(true);
+    }
+
+    const nextUrl =
+      value === 1
+        ? '#diff'
+        : `${window.location.pathname}${window.location.search}`;
+    window.history.replaceState(null, '', nextUrl);
+  };
+
+  const handleTextChange = () => {
     if (quillRef.current) {
       const plainText = quillRef.current.getSemanticHTML();
       setSourceCode(processHMTLtoASCII(plainText));
@@ -108,20 +138,88 @@ const App = () => {
   }
 
   return (
-    <WorkareaLaylout
-      leftContent={
-        <Editor
-          ref={quillRef}
-          onTextChange={handleTextChange}
+    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <Box
+        sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 20,
+          bgcolor: 'background.paper',
+          borderBottom: 1,
+          borderColor: 'divider',
+        }}
+      >
+        <Tabs
+          value={tab}
+          onChange={handleTabChange}
+          aria-label="Разделы приложения"
+          sx={{ px: 2 }}
+        >
+          <Tab
+            label="Редактор"
+            id="tab-editor"
+            aria-controls="panel-editor"
+          />
+          <Tab
+            label="Сравнение AsciiDoc"
+            id="tab-diff"
+            aria-controls="panel-diff"
+          />
+        </Tabs>
+      </Box>
+
+      <Box
+        role="tabpanel"
+        id="panel-editor"
+        aria-labelledby="tab-editor"
+        sx={{ display: tab === 0 ? 'block' : 'none' }}
+      >
+        <WorkareaLaylout
+          leftContent={
+            <Editor
+              ref={quillRef}
+              onTextChange={handleTextChange}
+            />
+          }
+          rightContent={
+            <Container>
+              <ThemePicker theme={theme} f={(e) => { setTheme(e)} }/>
+              <Highlighter theme={theme} source={source}></Highlighter>
+            </Container>
+          }
         />
-      }
-      rightContent={
-        <Container>
-          <ThemePicker theme={theme} f={(e) => { setTheme(e)} }/>
-          <Highlighter theme={theme} source={source}></Highlighter>
-        </Container>
-      }
-    />
+      </Box>
+
+      <Box
+        role="tabpanel"
+        id="panel-diff"
+        aria-labelledby="tab-diff"
+        sx={{
+          display: tab === 1 ? 'flex' : 'none',
+          flexDirection: 'column',
+          height: 'calc(100vh - 49px)',
+        }}
+      >
+        {diffVisited && (
+          <Suspense
+            fallback={
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '100%',
+                }}
+              >
+                <CircularProgress size={28} />
+              </Box>
+            }
+          >
+            <AsciiDocDiffPage />
+          </Suspense>
+        )}
+      </Box>
+    </Box>
   );
 };
 

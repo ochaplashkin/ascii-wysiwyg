@@ -16,7 +16,7 @@ export default function ThemePicker(props: ThemePickerProps) {
       {
         themeData.map((item) => {
           return (
-            <option value={item}>{item}</option>
+            <option key={item} value={item}>{item}</option>
           )
         }
       )
