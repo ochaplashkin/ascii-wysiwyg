@@ -1,62 +1,78 @@
-Heading 0
-= Document Title (Level 0)
+AsciiDoc WYSIWYG — соответствие визуальных блоков и разметки
 
-Heading 1
-== Level 1 Section Title
+Документ
+  Поле названия "Мой документ"  ->  = Мой документ
+  Заголовок 1–5                 ->  ==, ===, ====, =====, ======
 
-Heading 2
-=== Level 2 Section Title
+Инлайн-форматирование
+  Bold            **текст**
+  Italic          __текст__
+  Underline       [.underline]#текст#
+  Strikethrough   [.line-through]#текст#
+  Highlight       [.highlight]#текст#
+  Inline code     `текст`
+  Superscript     ^текст^
+  Subscript       ~текст~
 
-Heading 3
-==== Level 3 Section Title
+Ссылки
+  https://asciidoc.org                (текст совпадает с URL)
+  https://asciidoc.org[сайте AsciiDoc]
+  link:docs/page.html[Документация]
+  <<section,Раздел>>
 
-Heading 4
-===== Level 4 Section Title
+Списки
+  * пункт
+  ** вложенный пункт
+  . нумерованный пункт
+  .. вложенный нумерованный
+  * [ ] задача
+  * [x] сделано
 
-Heading 5
-====== Level 5 Section Title
+Цитата
+  [quote]
+  ____
+  Первый абзац
 
-== Another Level 1 Section Title
+  Второй абзац
+  ____
 
+Блок кода
+  [source,js]
+  ----
+  const value = 1;
+  ----
 
+Разделитель
+  '''
 
-Tables
+Таблица
+  [cols="1,1",options="header"]
+  |===
+  | Параметр
+  | Значение
 
-<table style="width: 100%" class="ql-table-better">
-    <tbody>
-    <tr>
-        <td data-row="row-fxvh">
-            <p class="ql-table-block" data-cell="cell-rrkx">
-                1
-            <br>
-        </td>
-        <td data-row="row-fxvh">
-            <p class="ql-table-block" data-cell="cell-zm38">
-                2
-            <br>
-        </td>
-    </tr>
-    <tr>
-        <td data-row="row-8l5s">
-            <p class="ql-table-block" data-cell="cell-8568">
-                3
-            <br>
-        </td>
-        <td data-row="row-8l5s">
-            <p class="ql-table-block" data-cell="cell-uuk4">
-                4
-            <br>
-        </td>
-    </tr>
-    </tbody>
-</table>
+  | Язык
+  | AsciiDoc
+  |===
 
+  Объединение ячеек: 2+| (colspan), .2+| (rowspan), 2.3+| (colspan + rowspan).
+  Символ | внутри ячейки экранируется как \|.
 
-[cols="1,1"]
-|===
-|1
-|2
+Вложенная таблица (таблица внутри ячейки)
+  Внешняя таблица использует |=== и ячейки |.
+  Ячейка с вложенной таблицей помечается стилем a: a| (или 2+a| при colspan).
+  Вложенная таблица использует !=== и ячейки !; символ ! в тексте экранируется как \!.
 
-|3
-|4
-|===
+  [cols="1,1"]
+  |===
+  | Внешняя ячейка
+  a|
+  [cols="1,1"]
+  !===
+  ! inner 1
+  ! inner 2
+  !===
+  |===
+
+  Глубже одного уровня Asciidoctor не различает вложенные таблицы, поэтому такие
+  таблицы сериализуются текстовой сводкой, чтобы не ломать внешнюю таблицу.

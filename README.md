@@ -1,3 +1,5 @@
-# AsciiDoc WYSIWIG editor
+# AsciiDoc WYSIWIG editor + diff
 
-![plot](./docs/preview.png)
+![plot](./docs/editor-preview.png)
+
+![plot](./docs/asciidoc-diff-preview.png)
