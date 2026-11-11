@@ -1,0 +1,71 @@
+/* Design tokens shared by the workspace, editor, preview and diff views. */
+
+:root {
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f7f8fa;
+  --color-border: #dfe1e6;
+  --color-border-soft: #ebecf0;
+  --color-text: #172b4d;
+  --color-text-strong: #44546f;
+  --color-text-muted: #6b778c;
+  --color-text-subtle: #9aa5b8;
+  --color-accent: #0c66e4;
+  --color-accent-strong: #0055cc;
+  --color-accent-soft: #e9f2ff;
+  --color-hover: #f1f2f4;
+  --color-danger: #c9372c;
+  --color-danger-soft: #ffebe6;
+  --color-success: #216e4e;
+  --color-success-soft: #e6f7ee;
+  --color-warning: #a54800;
+  --color-warning-soft: #fff7e6;
+  --color-added: #1f883d;
+  --color-added-soft: #e6ffec;
+  --color-removed: #cf222e;
+  --color-removed-soft: #ffebe9;
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgba(9, 30, 66, 0.08);
+  --shadow-md: 0 4px 12px rgba(9, 30, 66, 0.12);
+  --shadow-lg: 0 10px 32px rgba(9, 30, 66, 0.18);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+
+  --sidebar-width: 300px;
+  --focus-ring: 0 0 0 2px rgba(12, 102, 228, 0.35);
+}
+
+/* Global reset: the workspace owns the full viewport. */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100%;
+}

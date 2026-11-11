@@ -5,7 +5,7 @@ import type { DiffRow, DiffStatus } from '../model/diff.js';
 import { buildDisplayEntries } from '../model/display-rows.js';
 import { inlineDiff } from '../model/inline-diff.js';
 import type { RenderBlock } from '../model/render.js';
-import type { Side } from './types.js';
+import type { Side } from '../../../shared/model/types.js';
 
 type CellStatus = 'equal' | 'modified' | 'removed' | 'added' | 'empty';
 

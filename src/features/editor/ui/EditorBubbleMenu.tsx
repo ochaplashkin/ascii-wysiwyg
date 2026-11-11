@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useEditorState } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
 import { BubbleMenu } from '@tiptap/react/menus';
+import { NodeSelection } from '@tiptap/pm/state';
 
-import { IconButton } from './controls.js';
+import { IconButton } from '../../../shared/ui/controls.js';
 
 export interface EditorBubbleMenuProps {
   editor: Editor;
@@ -61,7 +62,13 @@ export function EditorBubbleMenu({
       className="editor-bubble-menu"
       aria-label="Форматирование выделения"
       options={{ placement: 'top', offset: 8 }}
-      shouldShow={({ from, to }) => !dismissed && from !== to}
+      shouldShow={({ from, to, editor: current }) =>
+        !dismissed &&
+        from !== to &&
+        // An atomic raw block is a NodeSelection; formatting marks do not
+        // apply to it, so the bubble menu must stay hidden.
+        !(current.state.selection instanceof NodeSelection)
+      }
     >
       <IconButton
         icon="bold"

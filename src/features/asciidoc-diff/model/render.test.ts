@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { renderAsciiDoc } from './render.js';
+import { renderAsciiDoc, renderAsciiDocPreview } from './render.js';
 
 describe('renderAsciiDoc', () => {
   it('extracts a title, headings and content blocks', async () => {
@@ -64,6 +64,25 @@ describe('renderAsciiDoc', () => {
     );
 
     expect(warnings.some((warning) => /include/i.test(warning.text))).toBe(true);
+  });
+
+  it('renders a full preview including the document title', async () => {
+    const { html, warnings } = await renderAsciiDocPreview(
+      '= Заголовок\n\nТекст **жирный**.',
+    );
+
+    expect(warnings).toEqual([]);
+    expect(html).toContain('Заголовок');
+    expect(html).toContain('Текст');
+    expect(html).toContain('<strong>жирный</strong>');
+  });
+
+  it('sanitizes passthrough HTML in the preview', async () => {
+    const { html } = await renderAsciiDocPreview(
+      'pass:[<img src=x onerror="alert(1)">]',
+    );
+
+    expect(html).not.toContain('onerror');
   });
 
   it('returns no blocks for an empty document', async () => {

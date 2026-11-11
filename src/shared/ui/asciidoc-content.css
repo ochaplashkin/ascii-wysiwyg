@@ -1,0 +1,234 @@
+/* Shared AsciiDoc preview styles.
+   Scoped to .adoc-rendered so Asciidoctor output never affects the app shell. */
+
+.adoc-rendered {
+  font-family: Georgia, 'Times New Roman', 'DejaVu Serif', serif;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.82);
+  overflow-wrap: anywhere;
+}
+
+.adoc-rendered > *:first-child {
+  margin-top: 0;
+}
+
+.adoc-rendered > *:last-child {
+  margin-bottom: 0;
+}
+
+.adoc-rendered h1,
+.adoc-rendered h2,
+.adoc-rendered h3,
+.adoc-rendered h4,
+.adoc-rendered h5,
+.adoc-rendered h6 {
+  margin: 0 0 0.5em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-weight: 300;
+  line-height: 1.25;
+  color: #ba3925;
+}
+
+.adoc-rendered h1 {
+  font-size: 1.9em;
+}
+
+.adoc-rendered h2 {
+  font-size: 1.45em;
+}
+
+.adoc-rendered h3 {
+  font-size: 1.2em;
+}
+
+.adoc-rendered h4,
+.adoc-rendered h5,
+.adoc-rendered h6 {
+  font-size: 1.05em;
+}
+
+.adoc-rendered p {
+  margin: 0 0 1em;
+}
+
+.adoc-rendered a {
+  color: #2156a5;
+  text-decoration: underline;
+}
+
+.adoc-rendered ul,
+.adoc-rendered ol {
+  margin: 0 0 1em 1.5em;
+  padding: 0;
+}
+
+.adoc-rendered li {
+  margin-bottom: 0.2em;
+}
+
+.adoc-rendered li p {
+  margin-bottom: 0.25em;
+}
+
+.adoc-rendered blockquote {
+  margin: 0 0 1em;
+  padding: 0.4em 1em;
+  color: rgba(0, 0, 0, 0.7);
+  border-left: 3px solid #d0d7de;
+}
+
+.adoc-rendered .quoteblock .title,
+.adoc-rendered .admonitionblock .title,
+.adoc-rendered .listingblock .title,
+.adoc-rendered .literalblock .title,
+.adoc-rendered .exampleblock .title,
+.adoc-rendered .tableblock .title,
+.adoc-rendered .imageblock .title,
+.adoc-rendered .sidebarblock .title {
+  margin-bottom: 0.35em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 0.88em;
+  font-style: italic;
+  color: #7a2518;
+}
+
+.adoc-rendered .quoteblock .paragraph:last-child p {
+  margin-bottom: 0;
+}
+
+.adoc-rendered table.tableblock {
+  width: 100%;
+  margin: 0 0 1em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 0.92em;
+  border-collapse: collapse;
+}
+
+.adoc-rendered table.tableblock th,
+.adoc-rendered table.tableblock td {
+  padding: 0.45em 0.65em;
+  text-align: left;
+  vertical-align: top;
+  border: 1px solid #d0d7de;
+}
+
+.adoc-rendered table.tableblock th {
+  font-weight: 600;
+  background: #f6f8fa;
+}
+
+.adoc-rendered pre {
+  margin: 0 0 1em;
+  padding: 0.75em 1em;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  font-size: 0.82em;
+  line-height: 1.5;
+  color: #1f2328;
+  white-space: pre;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+}
+
+.adoc-rendered code {
+  padding: 0.1em 0.3em;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+  font-size: 0.88em;
+  background: rgba(175, 184, 193, 0.2);
+  border-radius: 4px;
+}
+
+.adoc-rendered pre code {
+  padding: 0;
+  font-size: 1em;
+  background: none;
+}
+
+.adoc-rendered .admonitionblock {
+  margin: 0 0 1em;
+  padding: 0.6em 0.8em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 0.92em;
+  background: #f6f8fa;
+  border: 1px solid #d0d7de;
+  border-left: 4px solid #0969da;
+  border-radius: 4px;
+}
+
+.adoc-rendered .admonitionblock table {
+  width: auto;
+  margin: 0;
+  border-collapse: collapse;
+}
+
+.adoc-rendered .admonitionblock td {
+  padding: 0;
+  vertical-align: top;
+  border: none;
+}
+
+.adoc-rendered .admonitionblock td.icon {
+  width: 1%;
+  padding-right: 0.7em;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #0969da;
+}
+
+.adoc-rendered .admonitionblock td.content > .paragraph:last-child p {
+  margin-bottom: 0;
+}
+
+.adoc-rendered .admonitionblock.tip {
+  border-left-color: #1a7f37;
+}
+
+.adoc-rendered .admonitionblock.tip td.icon {
+  color: #1a7f37;
+}
+
+.adoc-rendered .admonitionblock.warning,
+.adoc-rendered .admonitionblock.caution {
+  border-left-color: #9a6700;
+}
+
+.adoc-rendered .admonitionblock.warning td.icon,
+.adoc-rendered .admonitionblock.caution td.icon {
+  color: #9a6700;
+}
+
+.adoc-rendered .admonitionblock.important {
+  border-left-color: #cf222e;
+}
+
+.adoc-rendered .admonitionblock.important td.icon {
+  color: #cf222e;
+}
+
+.adoc-rendered .imageblock {
+  margin-bottom: 1em;
+}
+
+.adoc-rendered .imageblock img {
+  max-width: 100%;
+  height: auto;
+}
+
+.adoc-rendered hr {
+  margin: 1em 0;
+  border: 0;
+  border-top: 1px solid #d0d7de;
+}
+
+.adoc-rendered .sectionbody > *:last-child {
+  margin-bottom: 0;
+}

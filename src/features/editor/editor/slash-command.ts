@@ -9,7 +9,7 @@ import {
   type SlashMenuHandle,
   type SlashMenuProps,
 } from '../ui/SlashMenu.js';
-import type { IconName } from '../ui/icons.js';
+import type { IconName } from '../../../shared/ui/icons.js';
 
 type HeadingLevel = 1 | 2 | 3 | 4 | 5;
 

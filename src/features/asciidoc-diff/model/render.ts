@@ -29,6 +29,30 @@ export interface RenderResult {
   warnings: RenderWarning[];
 }
 
+export interface PreviewResult {
+  /** Sanitized HTML of the `#content` section. */
+  html: string;
+  warnings: RenderWarning[];
+}
+
+const collectWarnings = (
+  logger: ReturnType<typeof MemoryLogger.create>,
+): RenderWarning[] =>
+  logger
+    .getMessages()
+    .filter((message) =>
+      ['WARN', 'ERROR', 'FATAL'].includes(message.getSeverity()),
+    )
+    .map((message): RenderWarning => {
+      const location = message.getSourceLocation();
+
+      return {
+        severity: message.getSeverity(),
+        text: message.getText(),
+        line: location ? location.getLineNumber() : null,
+      };
+    });
+
 export interface RenderOptions {
   /** Prefix for element ids; keeps anchors of the two columns unique. */
   idPrefix?: string;
@@ -166,20 +190,44 @@ export async function renderAsciiDoc(
     Array.from(content.children).forEach(walk);
   }
 
-  const warnings = logger
-    .getMessages()
-    .filter((message) =>
-      ['WARN', 'ERROR', 'FATAL'].includes(message.getSeverity()),
-    )
-    .map((message): RenderWarning => {
-      const location = message.getSourceLocation();
-
-      return {
-        severity: message.getSeverity(),
-        text: message.getText(),
-        line: location ? location.getLineNumber() : null,
-      };
-    });
+  const warnings = collectWarnings(logger);
 
   return { blocks, warnings };
+}
+
+/**
+ * Full-document preview used by the source editor. Returns the sanitized
+ * `#content` HTML instead of splitting it into diff blocks.
+ *
+ * When the source is malformed Asciidoctor still produces HTML; the warnings
+ * are surfaced next to the preview instead of replacing it.
+ */
+export async function renderAsciiDocPreview(
+  source: string,
+): Promise<PreviewResult> {
+  const logger = MemoryLogger.create();
+  const converted = await convert(source, {
+    safe: 'safe',
+    standalone: true,
+    logger,
+  });
+
+  if (typeof converted !== 'string') {
+    throw new Error('Asciidoctor did not return HTML');
+  }
+
+  const doc = new DOMParser().parseFromString(converted, 'text/html');
+  const header = doc.getElementById('header');
+  const content = doc.getElementById('content');
+
+  // The document title lives in `#header`, not in `#content`; the preview must
+  // show it, otherwise a `= Title` line silently disappears from the page.
+  const raw = `${header ? header.innerHTML : ''}${
+    content ? content.innerHTML : doc.body.innerHTML
+  }`;
+
+  return {
+    html: sanitizeHtml(raw),
+    warnings: collectWarnings(logger),
+  };
 }

@@ -355,6 +355,50 @@ export const Heading3Icon = headingIcon(3);
 export const Heading4Icon = headingIcon(4);
 export const Heading5Icon = headingIcon(5);
 
+export const FolderIcon = createIcon(
+  'FolderIcon',
+  <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />,
+);
+
+export const FileIcon = createIcon(
+  'FileIcon',
+  <>
+    <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+    <path d="M14 3v5h5" />
+  </>,
+);
+
+export const MenuIcon = createIcon(
+  'MenuIcon',
+  <>
+    <path d="M4 6h16" />
+    <path d="M4 12h16" />
+    <path d="M4 18h16" />
+  </>,
+);
+
+export const ChevronRightIcon = createIcon(
+  'ChevronRightIcon',
+  <path d="m9 6 6 6-6 6" />,
+);
+
+export const RefreshIcon = createIcon(
+  'RefreshIcon',
+  <>
+    <path d="M20 11a8 8 0 1 0-2.3 6.3" />
+    <path d="M20 5v6h-6" />
+  </>,
+);
+
+export const WarningIcon = createIcon(
+  'WarningIcon',
+  <>
+    <path d="M12 4 2.8 20h18.4z" />
+    <path d="M12 10v4" />
+    <path d="M12 17.2v.1" />
+  </>,
+);
+
 export const ICONS = {
   undo: UndoIcon,
   redo: RedoIcon,
@@ -396,6 +440,12 @@ export const ICONS = {
   heading3: Heading3Icon,
   heading4: Heading4Icon,
   heading5: Heading5Icon,
+  folder: FolderIcon,
+  file: FileIcon,
+  menu: MenuIcon,
+  chevronRight: ChevronRightIcon,
+  refresh: RefreshIcon,
+  warning: WarningIcon,
 } satisfies Record<string, ComponentType<IconProps>>;
 
 export type IconName = keyof typeof ICONS;

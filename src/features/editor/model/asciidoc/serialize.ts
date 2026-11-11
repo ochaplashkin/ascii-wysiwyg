@@ -45,6 +45,7 @@ const BLOCK_NODE_TYPES = new Set([
   'tableRow',
   'listItem',
   'taskItem',
+  'rawAsciiDoc',
 ]);
 
 function normalizeTitle(title: string): string {
@@ -91,6 +92,8 @@ function serializeBlock(
       return "'''";
     case 'table':
       return serializeTable(node, context);
+    case 'rawAsciiDoc':
+      return serializeRawAsciiDoc(node);
     default:
       return serializeUnknown(node, context);
   }
@@ -620,6 +623,19 @@ function positiveInteger(value: unknown): number {
     return 1;
   }
   return Math.floor(parsed);
+}
+
+// ---------------------------------------------------------------------------
+// Raw AsciiDoc
+// ---------------------------------------------------------------------------
+
+/**
+ * Raw fragments are stored verbatim; only trailing newlines are dropped so a
+ * raw block composes with the blank-line separator used between blocks.
+ */
+function serializeRawAsciiDoc(node: EditorNode): string {
+  const text = typeof node.attrs?.text === 'string' ? node.attrs.text : '';
+  return text.replace(/\n+$/, '');
 }
 
 // ---------------------------------------------------------------------------

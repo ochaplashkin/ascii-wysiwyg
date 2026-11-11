@@ -7,8 +7,9 @@ import {
   Tooltip,
 } from '@mui/material';
 
+import type { SourceDoc, SourcePair } from '../../../shared/model/types.js';
+import { Icon } from '../../../shared/ui/icons.js';
 import type { DiffStats } from '../model/diff.js';
-import type { Side, SourcePair } from './types.js';
 
 interface DiffToolbarProps {
   sources: SourcePair;
@@ -16,8 +17,9 @@ interface DiffToolbarProps {
   loading: boolean;
   onlyChanges: boolean;
   onToggleOnlyChanges: (value: boolean) => void;
-  onOpenSources: (side: Side) => void;
+  onOpenFile: (path: string) => void;
   onSwap: () => void;
+  onClose: () => void;
   activeChange: number | null;
   changeCount: number;
   onPrev: () => void;
@@ -40,25 +42,27 @@ const Stat = ({
 );
 
 const SourceButton = ({
-  side,
-  title,
-  name,
-  onClick,
+  slot,
+  role,
+  doc,
+  onOpenFile,
 }: {
-  side: 'Оригинал' | 'Изменённый';
-  title: string;
-  name: string;
-  onClick: () => void;
+  slot: 'A' | 'B';
+  role: string;
+  doc: SourceDoc;
+  onOpenFile: (path: string) => void;
 }) => (
   <Button
     size="small"
     variant="outlined"
     className="adoc-diff__source-button"
-    onClick={onClick}
-    title={title}
+    onClick={() => onOpenFile(doc.path)}
+    title={`Открыть ${doc.path} в редакторе`}
   >
-    <span className="adoc-diff__source-kind">{side}</span>
-    <span className="adoc-diff__source-button-name">{name}</span>
+    <span className="adoc-diff__source-kind">
+      {slot} · {role}
+    </span>
+    <span className="adoc-diff__source-button-name">{doc.name}</span>
   </Button>
 );
 
@@ -68,8 +72,9 @@ export function DiffToolbar({
   loading,
   onlyChanges,
   onToggleOnlyChanges,
-  onOpenSources,
+  onOpenFile,
   onSwap,
+  onClose,
   activeChange,
   changeCount,
   onPrev,
@@ -84,10 +89,10 @@ export function DiffToolbar({
     <div className="adoc-diff__toolbar">
       <div className="adoc-diff__toolbar-group">
         <SourceButton
-          side="Оригинал"
-          title={`Изменить оригинал: ${sources.left.name}${sources.left.path ? ` (${sources.left.path})` : ''}`}
-          name={sources.left.name}
-          onClick={() => onOpenSources('left')}
+          slot="A"
+          role="Оригинал"
+          doc={sources.left}
+          onOpenFile={onOpenFile}
         />
 
         <Tooltip title="Поменять документы местами">
@@ -103,10 +108,10 @@ export function DiffToolbar({
         </Tooltip>
 
         <SourceButton
-          side="Изменённый"
-          title={`Изменить изменённый документ: ${sources.right.name}${sources.right.path ? ` (${sources.right.path})` : ''}`}
-          name={sources.right.name}
-          onClick={() => onOpenSources('right')}
+          slot="B"
+          role="Изменённый"
+          doc={sources.right}
+          onOpenFile={onOpenFile}
         />
       </div>
 
@@ -132,7 +137,9 @@ export function DiffToolbar({
               onChange={(event) => onToggleOnlyChanges(event.target.checked)}
             />
           }
-          label={<span className="adoc-diff__switch-label">Только изменения</span>}
+          label={
+            <span className="adoc-diff__switch-label">Только изменения</span>
+          }
         />
 
         <ButtonGroup
@@ -169,7 +176,20 @@ export function DiffToolbar({
           </Tooltip>
         </ButtonGroup>
 
-        {loading && <CircularProgress size={16} />}
+        {loading ? <CircularProgress size={16} /> : null}
+
+        <Tooltip title="Закрыть сравнение (Esc)">
+          <Button
+            size="small"
+            variant="outlined"
+            className="adoc-diff__close-button"
+            onClick={onClose}
+            aria-label="Закрыть сравнение"
+          >
+            <Icon name="close" size={14} />
+            <span className="adoc-diff__close-label">Закрыть</span>
+          </Button>
+        </Tooltip>
       </div>
     </div>
   );

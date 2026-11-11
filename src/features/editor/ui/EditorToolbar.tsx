@@ -1,9 +1,7 @@
 import { useEditorState } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
 
-import { IconButton, ToolbarDivider } from './controls.js';
-import { DocumentMenu } from './DocumentMenu.js';
-import { SourceIcon } from './icons.js';
+import { IconButton, ToolbarDivider } from '../../../shared/ui/controls.js';
 import { LinkPopover } from './LinkPopover.js';
 
 export interface EditorToolbarProps {
@@ -11,9 +9,6 @@ export interface EditorToolbarProps {
   linkOpen: boolean;
   onLinkOpen: () => void;
   onLinkClose: () => void;
-  onOpenSource: () => void;
-  onNewDocument: () => void;
-  onDownload: () => void;
 }
 
 interface ToolbarState {
@@ -41,9 +36,6 @@ export function EditorToolbar({
   linkOpen,
   onLinkOpen,
   onLinkClose,
-  onOpenSource,
-  onNewDocument,
-  onDownload,
 }: EditorToolbarProps) {
   const state = useEditorState({
     editor,
@@ -256,24 +248,6 @@ export function EditorToolbar({
           />
         </div>
 
-        <span className="editor-toolbar__spacer" />
-
-        <div className="editor-toolbar__group editor-toolbar__group--end">
-          <button
-            type="button"
-            className="editor-source-button"
-            onClick={onOpenSource}
-            title="Открыть исходник (Ctrl/Cmd + /)"
-          >
-            <SourceIcon />
-            <span>Исходник</span>
-            <kbd>⌘/</kbd>
-          </button>
-          <DocumentMenu
-            onNewDocument={onNewDocument}
-            onDownload={onDownload}
-          />
-        </div>
       </div>
     </div>
   );

@@ -9,8 +9,8 @@ import {
 
 import type { Editor, Range } from '@tiptap/core';
 
-import type { IconName } from './icons.js';
-import { Icon, SearchIcon } from './icons.js';
+import type { IconName } from '../../../shared/ui/icons.js';
+import { Icon, SearchIcon } from '../../../shared/ui/icons.js';
 
 export interface SlashItem {
   id: string;

@@ -9,26 +9,30 @@ import {
   Typography,
 } from '@mui/material';
 
-import { IconButton } from './controls.js';
-import { DownloadIcon, PlusIcon } from './icons.js';
+import { IconButton } from '../../../shared/ui/controls.js';
+import { Icon } from '../../../shared/ui/icons.js';
 
 export interface DocumentMenuProps {
-  onNewDocument: () => void;
-  onDownload: () => void;
+  hasDraft: boolean;
+  onReloadFromDisk: () => void;
+  onResetDraft: () => void;
 }
 
-/** "⋯" menu with document-level actions and storage information. */
-export function DocumentMenu({ onNewDocument, onDownload }: DocumentMenuProps) {
+/** File-level actions: re-read from disk, discard the local draft. */
+export function DocumentMenu({
+  hasDraft,
+  onReloadFromDisk,
+  onResetDraft,
+}: DocumentMenuProps) {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = anchorEl !== null;
-
   const close = () => setAnchorEl(null);
 
   return (
     <>
       <IconButton
         icon="more"
-        label="Меню документа"
+        label="Меню файла"
         onClick={(event) => setAnchorEl(event.currentTarget)}
         aria-haspopup="menu"
         aria-expanded={open}
@@ -39,35 +43,36 @@ export function DocumentMenu({ onNewDocument, onDownload }: DocumentMenuProps) {
         onClose={close}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        slotProps={{ paper: { sx: { minWidth: 260, borderRadius: 2 } } }}
+        slotProps={{ paper: { sx: { minWidth: 280, borderRadius: 2 } } }}
       >
         <MenuItem
           onClick={() => {
             close();
-            onNewDocument();
+            onReloadFromDisk();
           }}
         >
           <ListItemIcon>
-            <PlusIcon />
+            <Icon name="refresh" size={16} />
           </ListItemIcon>
-          <ListItemText>Новый документ</ListItemText>
+          <ListItemText>Перечитать с диска</ListItemText>
         </MenuItem>
         <MenuItem
           onClick={() => {
             close();
-            onDownload();
+            onResetDraft();
           }}
+          disabled={!hasDraft}
         >
           <ListItemIcon>
-            <DownloadIcon />
+            <Icon name="trash" size={16} />
           </ListItemIcon>
-          <ListItemText>Скачать .adoc</ListItemText>
+          <ListItemText>Сбросить черновик</ListItemText>
         </MenuItem>
         <Divider />
-        <Box sx={{ px: 2, py: 1.25, maxWidth: 300 }}>
+        <Box sx={{ px: 2, py: 1.25, maxWidth: 320 }}>
           <Typography variant="caption" color="text.secondary">
-            Документ хранится только в этом браузере (localStorage). Чтобы
-            сохранить копию, скачайте файл .adoc.
+            Изменения хранятся только в этом браузере. Исходный файл на диске не
+            меняется, запись не запрашивается.
           </Typography>
         </Box>
       </Menu>

@@ -2,49 +2,62 @@ import { describe, expect, it } from 'vitest';
 
 import {
   EMPTY_SELECTION,
+  MAX_COMPARE_FILES,
+  canToggle,
   clearSlot,
   isComplete,
-  selectFile,
+  selectedCount,
   slotFor,
   swapSelection,
+  toggleSelection,
 } from './file-selection.js';
 
-describe('selectFile', () => {
-  it('fills the original slot first, then the modified one', () => {
-    const withLeft = selectFile(EMPTY_SELECTION, 'a.adoc');
-    expect(withLeft).toEqual({ left: 'a.adoc', right: null });
+describe('toggleSelection', () => {
+  it('fills A first, then B', () => {
+    const withA = toggleSelection(EMPTY_SELECTION, 'a.adoc');
+    expect(withA).toEqual({ left: 'a.adoc', right: null });
 
-    const withBoth = selectFile(withLeft, 'b.adoc');
+    const withBoth = toggleSelection(withA, 'b.adoc');
     expect(withBoth).toEqual({ left: 'a.adoc', right: 'b.adoc' });
   });
 
-  it('replaces the modified file when both slots are filled', () => {
+  it('unchecks an already selected file without touching the other slot', () => {
     const selection = { left: 'a.adoc', right: 'b.adoc' };
 
-    expect(selectFile(selection, 'c.adoc')).toEqual({
-      left: 'a.adoc',
-      right: 'c.adoc',
-    });
-  });
-
-  it('removes a file that is already selected', () => {
-    const selection = { left: 'a.adoc', right: 'b.adoc' };
-
-    expect(selectFile(selection, 'a.adoc')).toEqual({
+    expect(toggleSelection(selection, 'a.adoc')).toEqual({
       left: null,
       right: 'b.adoc',
     });
-    expect(selectFile(selection, 'b.adoc')).toEqual({
+    expect(toggleSelection(selection, 'b.adoc')).toEqual({
       left: 'a.adoc',
       right: null,
     });
   });
 
+  it('blocks a third file instead of replacing a slot', () => {
+    const selection = { left: 'a.adoc', right: 'b.adoc' };
+
+    expect(canToggle(selection, 'c.adoc')).toBe(false);
+    expect(toggleSelection(selection, 'c.adoc')).toBe(selection);
+    expect(selectedCount(selection)).toBe(MAX_COMPARE_FILES);
+  });
+
   it('does not mutate the previous selection', () => {
     const selection = { left: null, right: null };
-    selectFile(selection, 'a.adoc');
+    toggleSelection(selection, 'a.adoc');
 
     expect(selection).toEqual({ left: null, right: null });
+  });
+});
+
+describe('canToggle', () => {
+  it('allows checking when fewer than two files are selected', () => {
+    expect(canToggle(EMPTY_SELECTION, 'a.adoc')).toBe(true);
+    expect(canToggle({ left: 'a.adoc', right: null }, 'b.adoc')).toBe(true);
+  });
+
+  it('always allows unchecking a selected file', () => {
+    expect(canToggle({ left: 'a.adoc', right: 'b.adoc' }, 'a.adoc')).toBe(true);
   });
 });
 
@@ -58,26 +71,19 @@ describe('slotFor', () => {
   });
 });
 
-describe('clearSlot', () => {
+describe('clearSlot and swapSelection', () => {
   it('empties only the requested slot', () => {
-    const selection = { left: 'a.adoc', right: 'b.adoc' };
-
-    expect(clearSlot(selection, 'left')).toEqual({
+    expect(clearSlot({ left: 'a.adoc', right: 'b.adoc' }, 'left')).toEqual({
       left: null,
       right: 'b.adoc',
     });
   });
-});
 
-describe('swapSelection', () => {
   it('exchanges the slots', () => {
     expect(swapSelection({ left: 'a.adoc', right: 'b.adoc' })).toEqual({
       left: 'b.adoc',
       right: 'a.adoc',
     });
-  });
-
-  it('keeps a single selection on the opposite side', () => {
     expect(swapSelection({ left: 'a.adoc', right: null })).toEqual({
       left: null,
       right: 'a.adoc',
@@ -89,6 +95,6 @@ describe('isComplete', () => {
   it('requires both slots', () => {
     expect(isComplete({ left: 'a.adoc', right: 'b.adoc' })).toBe(true);
     expect(isComplete({ left: 'a.adoc', right: null })).toBe(false);
-    expect(isComplete({ left: null, right: null })).toBe(false);
+    expect(isComplete(EMPTY_SELECTION)).toBe(false);
   });
 });

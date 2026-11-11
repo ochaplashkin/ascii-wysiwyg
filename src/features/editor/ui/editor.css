@@ -1189,3 +1189,167 @@
     transition: none !important;
   }
 }
+
+/* ------------------------------------------------------------------------- */
+/* Visual mode inside the workspace shell                                    */
+/* ------------------------------------------------------------------------- */
+
+.editor-shell.ve-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+.ve-shell .editor-topbar {
+  position: static;
+  top: auto;
+  flex: 0 0 auto;
+}
+
+.ve-shell .editor-toolbar__inner {
+  max-width: none;
+  padding: 6px 14px;
+}
+
+.ve-shell .editor-workspace {
+  flex: 1 1 auto;
+  min-height: 0;
+  align-items: flex-start;
+  padding: 18px 20px 48px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.ve-shell .editor-page {
+  width: 100%;
+  max-width: 860px;
+  min-height: 0;
+  margin: 0 auto;
+  padding: 32px 44px 40px;
+}
+
+.ve-banner {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 10px 14px 0;
+  padding: 9px 12px;
+  border: 1px solid #f2d6a2;
+  border-radius: var(--radius-md);
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.ve-banner__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--color-warning);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ve-banner__body {
+  min-width: 0;
+}
+
+.ve-banner strong {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--color-text);
+}
+
+.ve-banner p {
+  margin: 0;
+}
+
+.ve-banner code {
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+}
+
+.ve-banner__list {
+  margin: 5px 0 0;
+  padding-left: 18px;
+  color: var(--color-text-muted);
+}
+
+.ve-banner__list li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Raw AsciiDoc atom blocks in the visual editor ---------------------------- */
+
+.tiptap-content pre.raw-asciidoc {
+  position: relative;
+  margin: 18px 0;
+  padding: 32px 14px 14px;
+  border: 1px dashed #d4a72c;
+  border-radius: var(--radius-md);
+  background: #fffdf5;
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+
+.tiptap-content pre.raw-asciidoc::before {
+  content: 'AsciiDoc-разметка';
+  position: absolute;
+  top: 7px;
+  left: 10px;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.tiptap-content pre.raw-asciidoc code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+}
+
+.tiptap-content pre.raw-asciidoc.ProseMirror-selectednode {
+  border-color: var(--color-accent);
+  box-shadow: var(--focus-ring);
+}
+
+.tiptap-content .raw-asciidoc:hover {
+  background: #fff9e6;
+}
+
+@media (max-width: 760px) {
+  .ve-shell .editor-workspace {
+    padding: 10px 8px 32px;
+  }
+
+  .ve-shell .editor-page {
+    padding: 22px 18px 28px;
+  }
+
+  .ve-banner {
+    margin: 8px 10px 0;
+  }
+}

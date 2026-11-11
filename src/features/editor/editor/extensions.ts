@@ -10,6 +10,8 @@ import TaskList from '@tiptap/extension-task-list';
 import TextAlign from '@tiptap/extension-text-align';
 import StarterKit from '@tiptap/starter-kit';
 
+import { RawAsciiDoc } from './raw-asciidoc.js';
+
 /**
  * Single Tiptap configuration used by the editor.
  *
@@ -67,6 +69,7 @@ export function createEditorExtensions() {
     }),
     Superscript,
     Subscript,
+    RawAsciiDoc,
     AsciiDocShortcuts,
   ];
 }

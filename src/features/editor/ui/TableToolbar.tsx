@@ -1,8 +1,8 @@
 import { useEditorState } from '@tiptap/react';
 import type { Editor } from '@tiptap/react';
 
-import { IconButton, ToolbarDivider } from './controls.js';
-import { TableIcon } from './icons.js';
+import { IconButton, ToolbarDivider } from '../../../shared/ui/controls.js';
+import { TableIcon } from '../../../shared/ui/icons.js';
 
 export interface TableToolbarProps {
   editor: Editor;

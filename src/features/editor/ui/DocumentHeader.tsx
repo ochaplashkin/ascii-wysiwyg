@@ -6,32 +6,23 @@ export interface DocumentHeaderProps {
   inputRef: RefObject<HTMLInputElement | null>;
 }
 
-/** Breadcrumb and the Confluence-style document title field. */
+/** Editable document title. It becomes the leading `= Title` in AsciiDoc. */
 export function DocumentHeader({
   title,
   onChange,
   inputRef,
 }: DocumentHeaderProps) {
-  const displayTitle = title.trim().length > 0 ? title : 'Без названия';
-
   return (
-    <header className="document-header">
-      <nav className="document-breadcrumb" aria-label="Путь к документу">
-        <span>Документы</span>
-        <span aria-hidden="true">/</span>
-        <span className="document-breadcrumb__current">{displayTitle}</span>
-      </nav>
-      <div className="document-title-row">
-        <input
-          ref={inputRef}
-          className="document-title"
-          value={title}
-          onChange={(event) => onChange(event.target.value)}
-          placeholder="Без названия"
-          aria-label="Название документа"
-          spellCheck={false}
-        />
-      </div>
-    </header>
+    <div className="document-title-row">
+      <input
+        ref={inputRef}
+        className="document-title"
+        value={title}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="Без названия"
+        aria-label="Название документа"
+        spellCheck={false}
+      />
+    </div>
   );
 }

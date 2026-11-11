@@ -1,7 +1,7 @@
 import {
   SUPPORTED_EXTENSIONS,
   isSupportedFile,
-} from '../model/directory-tree.js';
+} from './directory-tree.js';
 
 /** A text file the sidebar can read on demand. */
 export interface LocalFile {
