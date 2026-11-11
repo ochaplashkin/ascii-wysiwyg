@@ -1,0 +1,11 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ascii-wysiwyg:latest
+    # The container only serves HTTP on 80. Publishing it on 0.0.0.0 makes it
+    # reachable from other hosts; override HOST_PORT/HOST_BIND in .env if needed.
+    ports:
+      - "${HOST_BIND:-0.0.0.0}:${HOST_PORT:-8080}:80"
+    restart: unless-stopped

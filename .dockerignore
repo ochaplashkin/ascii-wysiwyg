@@ -1,0 +1,25 @@
+# Dependencies and build output are recreated inside the builder stage.
+node_modules
+dist
+dist-ssr
+
+# VCS / editor / OS noise
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+*.log
+*.local
+
+# Local npm cache used during verification
+.npm-cache
+
+# Docker-related files are not needed inside the build context
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Documentation and sample sources are not part of the bundle
+docs
+*.md
