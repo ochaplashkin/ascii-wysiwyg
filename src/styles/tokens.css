@@ -25,6 +25,11 @@
   --color-removed: #cf222e;
   --color-removed-soft: #ffebe9;
 
+  /* File-type icon accents in the sidebar tree. */
+  --color-file-asciidoc: var(--color-accent);
+  --color-file-markdown: #7a5af8;
+  --color-file-text: var(--color-text-subtle);
+
   --font-sans:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
   --font-mono:

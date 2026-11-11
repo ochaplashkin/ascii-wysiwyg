@@ -399,6 +399,67 @@ export const WarningIcon = createIcon(
   </>,
 );
 
+export const FolderOpenIcon = createIcon(
+  'FolderOpenIcon',
+  <>
+    <path d="M3 8V7a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v1" />
+    <path d="M3 8h17.2a1.6 1.6 0 0 1 1.55 2l-1.9 8.1a2 2 0 0 1-1.95 1.55H5a2 2 0 0 1-2-2z" />
+  </>,
+);
+
+export const ExpandAllIcon = createIcon(
+  'ExpandAllIcon',
+  <>
+    <path d="m7 9 5-5 5 5" />
+    <path d="m7 15 5 5 5-5" />
+  </>,
+);
+
+export const CollapseAllIcon = createIcon(
+  'CollapseAllIcon',
+  <>
+    <path d="m7 5 5 5 5-5" />
+    <path d="m7 19 5-5 5 5" />
+  </>,
+);
+
+export const SortIcon = createIcon(
+  'SortIcon',
+  <>
+    <path d="M4 7h9M4 12h6M4 17h3" />
+    <path d="M18 5v14" />
+    <path d="m15 16 3 3 3-3" />
+  </>,
+);
+
+export const DensityIcon = createIcon(
+  'DensityIcon',
+  <>
+    <path d="M4 5h16M4 19h16" />
+    <path d="M12 8v8" />
+    <path d="m8.5 11.5 3.5-3.5 3.5 3.5" />
+    <path d="m8.5 12.5 3.5 3.5 3.5-3.5" />
+  </>,
+);
+
+export const SidebarCollapseIcon = createIcon(
+  'SidebarCollapseIcon',
+  <>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M9 4v16" />
+    <path d="m16 9-3 3 3 3" />
+  </>,
+);
+
+export const SidebarExpandIcon = createIcon(
+  'SidebarExpandIcon',
+  <>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M9 4v16" />
+    <path d="m13 9 3 3-3 3" />
+  </>,
+);
+
 export const ICONS = {
   undo: UndoIcon,
   redo: RedoIcon,
@@ -441,11 +502,18 @@ export const ICONS = {
   heading4: Heading4Icon,
   heading5: Heading5Icon,
   folder: FolderIcon,
+  folderOpen: FolderOpenIcon,
   file: FileIcon,
   menu: MenuIcon,
   chevronRight: ChevronRightIcon,
   refresh: RefreshIcon,
   warning: WarningIcon,
+  expandAll: ExpandAllIcon,
+  collapseAll: CollapseAllIcon,
+  sort: SortIcon,
+  density: DensityIcon,
+  sidebarCollapse: SidebarCollapseIcon,
+  sidebarExpand: SidebarExpandIcon,
 } satisfies Record<string, ComponentType<IconProps>>;
 
 export type IconName = keyof typeof ICONS;

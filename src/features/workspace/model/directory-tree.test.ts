@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  ancestorPaths,
   buildFileTree,
   collectDirectoryPaths,
+  countFiles,
   fileCountLabel,
-  filterPaths,
+  filterTree,
   isSupportedFile,
   type DirectoryNode,
   type TreeNode,
@@ -86,6 +88,63 @@ describe('buildFileTree', () => {
     expect(collectDirectoryPaths(tree)).toEqual(['one', 'one/two']);
     expect(filePaths(tree)).toEqual(['one/two/three.adoc']);
   });
+
+  it('keeps empty directories and nested empty directories', () => {
+    const tree = buildFileTree(
+      ['docs/intro.adoc'],
+      ['docs/empty', 'docs/empty/deep', 'assets', 'docs/empty'],
+    );
+
+    expect(tree.map((node) => node.name)).toEqual(['assets', 'docs']);
+    expect(directory(tree, 'docs').children.map((node) => node.name)).toEqual([
+      'empty',
+      'intro.adoc',
+    ]);
+    expect(
+      directory(directory(tree, 'docs').children, 'empty').children.map(
+        (node) => node.name,
+      ),
+    ).toEqual(['deep']);
+    expect(countFiles(tree)).toBe(1);
+  });
+
+  it('sorts by type: directories first, files by extension, then name', () => {
+    const tree = buildFileTree(
+      [
+        'z.md',
+        'b.txt',
+        'a.adoc',
+        'no-extension',
+        'dir1/x.adoc',
+        'dir2/y.adoc',
+      ],
+      [],
+      'type',
+    );
+
+    expect(tree.map((node) => node.name)).toEqual([
+      'dir1',
+      'dir2',
+      'a.adoc',
+      'z.md',
+      'b.txt',
+      'no-extension',
+    ]);
+  });
+
+  it('sorts files with equal extensions naturally in type mode', () => {
+    const tree = buildFileTree(
+      ['chapter10.adoc', 'chapter2.adoc', 'b.md'],
+      [],
+      'type',
+    );
+
+    expect(tree.map((node) => node.name)).toEqual([
+      'chapter2.adoc',
+      'chapter10.adoc',
+      'b.md',
+    ]);
+  });
 });
 
 describe('collectDirectoryPaths', () => {
@@ -104,26 +163,65 @@ describe('collectDirectoryPaths', () => {
   });
 });
 
-describe('filterPaths', () => {
-  const paths = ['docs/intro.adoc', 'docs/Chapter-2.adoc', 'notes.txt'];
+describe('countFiles', () => {
+  it('counts files on every level', () => {
+    expect(countFiles(buildFileTree(['a.adoc', 'd/b.adoc', 'd/e/c.adoc']))).toBe(
+      3,
+    );
+    expect(countFiles(buildFileTree([], ['empty']))).toBe(0);
+  });
+});
+
+describe('ancestorPaths', () => {
+  it('returns the directories above a file, outermost first', () => {
+    expect(ancestorPaths('a/b/c.adoc')).toEqual(['a', 'a/b']);
+    expect(ancestorPaths('root.adoc')).toEqual([]);
+    expect(ancestorPaths('/leading/slash.adoc')).toEqual(['leading']);
+  });
+});
+
+describe('filterTree', () => {
+  const tree = buildFileTree(
+    ['docs/intro.adoc', 'docs/Chapter-2.adoc', 'notes.txt', 'other/readme.md'],
+    ['docs/empty', 'assets/images'],
+  );
 
   it('matches a case-insensitive substring of the relative path', () => {
-    expect(filterPaths(paths, 'chapter')).toEqual(['docs/Chapter-2.adoc']);
-    expect(filterPaths(paths, 'DOCS/')).toEqual([
-      'docs/intro.adoc',
-      'docs/Chapter-2.adoc',
+    const filtered = filterTree(tree, 'chapter');
+
+    expect(filePaths(filtered)).toEqual(['docs/Chapter-2.adoc']);
+    expect(filtered.map((node) => node.name)).toEqual(['docs']);
+    expect(
+      directory(filtered, 'docs').children.map((node) => node.name),
+    ).toEqual(['Chapter-2.adoc']);
+  });
+
+  it('keeps the ancestors of a match', () => {
+    const filtered = filterTree(tree, 'readme');
+
+    expect(filtered.map((node) => node.name)).toEqual(['other']);
+    expect(filePaths(filtered)).toEqual(['other/readme.md']);
+  });
+
+  it('keeps a matched empty directory with empty children', () => {
+    const filtered = filterTree(tree, 'empty');
+    const docs = directory(filtered, 'docs');
+
+    expect(docs.children).toEqual([
+      expect.objectContaining({ type: 'directory', path: 'docs/empty' }),
     ]);
+    expect(directory(docs.children, 'empty').children).toEqual([]);
   });
 
-  it('trims the query and returns all paths for an empty one', () => {
-    expect(filterPaths(paths, '  intro ')).toEqual(['docs/intro.adoc']);
-    expect(filterPaths(paths, '   ')).toEqual(paths);
+  it('returns the whole tree for an empty query', () => {
+    const result = filterTree(tree, '   ');
+
+    expect(result).toEqual(tree);
+    expect(result).not.toBe(tree);
   });
 
-  it('returns a new array for an empty query', () => {
-    const result = filterPaths(paths, '');
-    expect(result).toEqual(paths);
-    expect(result).not.toBe(paths);
+  it('returns an empty list when nothing matches', () => {
+    expect(filterTree(tree, 'zzz')).toEqual([]);
   });
 });
 

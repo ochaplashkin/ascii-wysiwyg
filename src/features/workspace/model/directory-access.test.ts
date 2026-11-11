@@ -89,6 +89,7 @@ describe('pickLocalDirectory', () => {
       'notes.txt',
       'README.md',
     ]);
+    expect(result?.directories).toEqual(['guide']);
     expect(await result?.files[0]?.read()).toBe('= Intro');
   });
 
@@ -107,6 +108,7 @@ describe('pickLocalDirectory', () => {
     const result = await pickLocalDirectory();
 
     expect(result?.files.map((file) => file.path)).toEqual(['content/doc.adoc']);
+    expect(result?.directories).toEqual(['content']);
   });
 
   it('keeps sibling files when a subfolder cannot be read', async () => {
@@ -124,6 +126,61 @@ describe('pickLocalDirectory', () => {
       'first.adoc',
       'last.adoc',
     ]);
+    // The unreadable folder still belongs in the tree, it is just empty.
+    expect(result?.directories).toEqual(['broken']);
+  });
+
+  it('collects empty folders and nested folders', async () => {
+    installPicker(async () =>
+      fakeDirectory('project', [
+        fakeFile('guide.adoc', 'guide'),
+        fakeDirectory('empty', []),
+        fakeDirectory('docs', [
+          fakeDirectory('nested-empty', []),
+          fakeFile('intro.adoc', 'intro'),
+        ]),
+      ]),
+    );
+
+    const result = await pickLocalDirectory();
+
+    expect(result?.files.map((file) => file.path)).toEqual([
+      'guide.adoc',
+      'docs/intro.adoc',
+    ]);
+    expect(result?.directories).toEqual(['empty', 'docs', 'docs/nested-empty']);
+  });
+
+  it('does not put hidden and skipped folders into directories', async () => {
+    installPicker(async () =>
+      fakeDirectory('project', [
+        fakeDirectory('.git', [fakeFile('config.adoc', 'git')]),
+        fakeDirectory('node_modules', []),
+        fakeDirectory('bower_components', []),
+        fakeDirectory('vendor', []),
+        fakeDirectory('docs', []),
+      ]),
+    );
+
+    const result = await pickLocalDirectory();
+
+    expect(result?.directories).toEqual(['docs']);
+  });
+
+  it('returns truncated structure with the folders it managed to walk', async () => {
+    const entries = [
+      ...Array.from({ length: 1500 }, (_, index) =>
+        fakeFile(`file-${index}.adoc`, ''),
+      ),
+      fakeDirectory('after-limit', []),
+    ];
+    installPicker(async () => fakeDirectory('many', entries));
+
+    const result = await pickLocalDirectory();
+
+    expect(result?.truncated).toBe(true);
+    expect(result?.files).toHaveLength(1500);
+    expect(result?.directories).toEqual([]);
   });
 
   it('returns null when the user cancels the dialog', async () => {
@@ -167,6 +224,7 @@ describe('pickLocalDirectory', () => {
         files: [
           expect.objectContaining({ path: 'late.adoc', name: 'late.adoc' }),
         ],
+        directories: [],
         truncated: false,
       });
     } finally {

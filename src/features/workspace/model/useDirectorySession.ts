@@ -7,9 +7,11 @@ import {
   type LocalFile,
 } from './directory-access.js';
 import {
+  ancestorPaths,
   buildFileTree,
   collectDirectoryPaths,
-  filterPaths,
+  filterTree,
+  type SortMode,
   type TreeNode,
 } from './directory-tree.js';
 
@@ -17,14 +19,24 @@ export interface DirectorySession {
   directory: LocalDirectory | null;
   files: ReadonlyMap<string, LocalFile>;
   paths: string[];
+  directories: readonly string[];
   tree: TreeNode[];
   visibleTree: TreeNode[];
   query: string;
   setQuery: (value: string) => void;
   isSearching: boolean;
+  /** Directories expanded outside of search. */
   expanded: ReadonlySet<string>;
+  /** Directories manually collapsed while the search filter is active. */
+  searchCollapsed: ReadonlySet<string>;
   isOpen: (path: string) => boolean;
   toggleDirectory: (path: string) => void;
+  expandAll: () => void;
+  collapseAll: () => void;
+  /** Expands the ancestors of `path` and drops a filter hiding it. */
+  revealPath: (path: string) => void;
+  sortMode: SortMode;
+  setSortMode: (mode: SortMode) => void;
   picking: boolean;
   error: string | null;
   clearError: () => void;
@@ -41,6 +53,8 @@ export interface DirectorySession {
 const errorMessage = (reason: unknown): string =>
   reason instanceof Error ? reason.message : String(reason);
 
+const EMPTY_SET: ReadonlySet<string> = new Set<string>();
+
 /**
  * Owns the picked directory: the native picker, the file tree, search and the
  * text cache. Every file read is local; nothing is sent to a server.
@@ -49,10 +63,11 @@ export function useDirectorySession(): DirectorySession {
   const [directory, setDirectory] = useState<LocalDirectory | null>(null);
   const [picking, setPicking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState('');
-  const [expanded, setExpanded] = useState<ReadonlySet<string>>(
-    () => new Set<string>(),
-  );
+  const [query, setQueryState] = useState('');
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(EMPTY_SET);
+  const [searchCollapsed, setSearchCollapsed] =
+    useState<ReadonlySet<string>>(EMPTY_SET);
+  const [sortMode, setSortMode] = useState<SortMode>('name');
 
   const pickingRef = useRef(false);
   const cacheRef = useRef(new Map<string, string>());
@@ -64,21 +79,47 @@ export function useDirectorySession(): DirectorySession {
     [directory],
   );
 
+  const directories = useMemo(
+    () => directory?.directories ?? [],
+    [directory],
+  );
+
   const files = useMemo(() => {
     const map = new Map<string, LocalFile>();
     for (const file of directory?.files ?? []) map.set(file.path, file);
     return map;
   }, [directory]);
 
-  const tree = useMemo(() => buildFileTree(paths), [paths]);
+  const tree = useMemo(
+    () => buildFileTree(paths, directories, sortMode),
+    [directories, paths, sortMode],
+  );
 
   const isSearching = query.trim().length > 0;
 
-  // While searching every directory is expanded so relative matches stay
-  // visible regardless of the manual collapse state.
   const visibleTree = useMemo(
-    () => (isSearching ? buildFileTree(filterPaths(paths, query)) : tree),
-    [isSearching, paths, query, tree],
+    () => (isSearching ? filterTree(tree, query) : tree),
+    [isSearching, query, tree],
+  );
+
+  // Search callbacks read the latest filter without changing identity, so the
+  // "reveal active file" effect does not re-run on every keystroke.
+  const searchStateRef = useRef({ isSearching, query });
+  searchStateRef.current = { isSearching, query };
+
+  const clearSearchCollapsed = useCallback(() => {
+    setSearchCollapsed((previous) =>
+      previous.size === 0 ? previous : new Set<string>(),
+    );
+  }, []);
+
+  /** Changing the query gives every match a fresh expanded state. */
+  const setQuery = useCallback(
+    (value: string) => {
+      clearSearchCollapsed();
+      setQueryState(value);
+    },
+    [clearSearchCollapsed],
   );
 
   const chooseDirectory = useCallback(async () => {
@@ -95,12 +136,10 @@ export function useDirectorySession(): DirectorySession {
 
       cacheRef.current.clear();
       setDirectory(next);
-      setQuery('');
-      setExpanded(
-        new Set(
-          collectDirectoryPaths(buildFileTree(next.files.map((file) => file.path))),
-        ),
-      );
+      // Only the top level is visible after picking a folder.
+      setQueryState('');
+      setExpanded(EMPTY_SET);
+      setSearchCollapsed(EMPTY_SET);
     } catch (reason) {
       setError(errorMessage(reason));
     } finally {
@@ -109,19 +148,89 @@ export function useDirectorySession(): DirectorySession {
     }
   }, []);
 
-  const toggleDirectory = useCallback((path: string) => {
-    setExpanded((previous) => {
-      const next = new Set(previous);
-      if (next.has(path)) next.delete(path);
-      else next.add(path);
-      return next;
-    });
-  }, []);
+  const toggleDirectory = useCallback(
+    (path: string) => {
+      if (searchStateRef.current.isSearching) {
+        setSearchCollapsed((previous) => {
+          const next = new Set(previous);
+          if (next.has(path)) next.delete(path);
+          else next.add(path);
+          return next;
+        });
+        return;
+      }
+
+      setExpanded((previous) => {
+        const next = new Set(previous);
+        if (next.has(path)) next.delete(path);
+        else next.add(path);
+        return next;
+      });
+    },
+    [],
+  );
 
   const isOpen = useCallback(
-    (path: string) => isSearching || expanded.has(path),
-    [expanded, isSearching],
+    (path: string) =>
+      isSearching ? !searchCollapsed.has(path) : expanded.has(path),
+    [expanded, isSearching, searchCollapsed],
   );
+
+  const expandAll = useCallback(() => {
+    if (searchStateRef.current.isSearching) {
+      clearSearchCollapsed();
+      return;
+    }
+
+    setExpanded(new Set(collectDirectoryPaths(tree)));
+  }, [clearSearchCollapsed, tree]);
+
+  const collapseAll = useCallback(() => {
+    if (searchStateRef.current.isSearching) {
+      const collapsed = collectDirectoryPaths(visibleTree);
+      setSearchCollapsed(new Set(collapsed));
+      return;
+    }
+
+    setExpanded((previous) => (previous.size === 0 ? previous : EMPTY_SET));
+  }, [visibleTree]);
+
+  const revealPath = useCallback((path: string) => {
+    const ancestors = ancestorPaths(path);
+    if (ancestors.length > 0) {
+      setExpanded((previous) => {
+        let changed = false;
+        const next = new Set(previous);
+        for (const ancestor of ancestors) {
+          if (next.has(ancestor)) continue;
+          next.add(ancestor);
+          changed = true;
+        }
+        return changed ? next : previous;
+      });
+
+      setSearchCollapsed((previous) => {
+        let changed = false;
+        const next = new Set(previous);
+        for (const ancestor of ancestors) {
+          if (next.delete(ancestor)) changed = true;
+        }
+        return changed ? next : previous;
+      });
+    }
+
+    const { isSearching: searching, query: currentQuery } =
+      searchStateRef.current;
+    if (
+      searching &&
+      !path.toLowerCase().includes(currentQuery.trim().toLowerCase())
+    ) {
+      // The active file is hidden by the filter: drop the filter so the tree
+      // can show it again.
+      clearSearchCollapsed();
+      setQueryState('');
+    }
+  }, [clearSearchCollapsed]);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -147,14 +256,21 @@ export function useDirectorySession(): DirectorySession {
     directory,
     files,
     paths,
+    directories,
     tree,
     visibleTree,
     query,
     setQuery,
     isSearching,
     expanded,
+    searchCollapsed,
     isOpen,
     toggleDirectory,
+    expandAll,
+    collapseAll,
+    revealPath,
+    sortMode,
+    setSortMode,
     picking,
     error,
     clearError,

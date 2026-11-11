@@ -44,6 +44,109 @@
   display: none;
 }
 
+/* Collapsible sidebar and resizer ----------------------------------------- */
+
+.workspace-shell.is-sidebar-collapsed {
+  grid-template-columns: 44px minmax(0, 1fr);
+}
+
+.workspace-shell.is-sidebar-collapsed .ws-sidebar {
+  display: none;
+}
+
+.ws-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0;
+  border-right: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.ws-rail__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, var(--color-accent), #4b9bff);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: var(--shadow-sm);
+}
+
+.ws-rail__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-strong);
+  cursor: pointer;
+}
+
+.ws-rail__button:hover {
+  background: var(--color-hover);
+}
+
+.ws-rail__button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.ws-sidebar__resizer {
+  position: absolute;
+  top: 0;
+  right: -3px;
+  bottom: 0;
+  z-index: 3;
+  width: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.ws-sidebar__resizer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2px;
+  width: 2px;
+  background: transparent;
+  transition: background-color 0.12s ease;
+}
+
+.ws-sidebar__resizer:hover::after,
+.ws-sidebar__resizer:focus-visible::after {
+  background: var(--color-accent);
+}
+
+.ws-sidebar__resizer:focus-visible {
+  outline: none;
+}
+
+body.is-resizing-sidebar {
+  cursor: col-resize;
+  user-select: none;
+}
+
+body.is-resizing-sidebar .ws-sidebar,
+body.is-resizing-sidebar .ws-sidebar *,
+body.is-resizing-sidebar .workspace-main * {
+  transition: none !important;
+  user-select: none;
+}
+
 .ws-folder {
   flex: 0 0 auto;
   display: flex;
@@ -57,6 +160,32 @@
   display: flex;
   align-items: center;
   gap: 9px;
+}
+
+.ws-folder__collapse {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-left: auto;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.ws-folder__collapse:hover {
+  background: var(--color-hover);
+  color: var(--color-text-strong);
+}
+
+.ws-folder__collapse:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
 }
 
 .ws-brand__mark {
@@ -193,6 +322,71 @@
   cursor: pointer;
 }
 
+/* Tree toolbar ------------------------------------------------------------ */
+
+.ws-tree-toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 8px 6px 16px;
+}
+
+.ws-tree-toolbar__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-tree-toolbar__actions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 1px;
+}
+
+.ws-tool-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.ws-tool-button:hover:not(:disabled) {
+  background: var(--color-hover);
+  color: var(--color-text-strong);
+}
+
+.ws-tool-button[aria-pressed='true'] {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.ws-tool-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.ws-tool-button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
 /* Tree -------------------------------------------------------------------- */
 
 .ws-tree-scroll {
@@ -204,14 +398,50 @@
 }
 
 .ws-tree {
+  --tree-indent: 14px;
+  --tree-row-file: 30px;
+  --tree-row-dir: 27px;
+  --tree-icon: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+.ws-tree--compact {
+  --tree-indent: 12px;
+  --tree-row-file: 24px;
+  --tree-row-dir: 23px;
+  --tree-icon: 13px;
+}
+
 .ws-tree__item {
+  position: relative;
   margin: 0;
   padding: 0;
+  border-radius: var(--radius-sm);
+}
+
+/* Indentation guides, drawn from `--depth` without extra DOM nodes. */
+.ws-tree__item::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 8px;
+  width: calc(var(--depth, 0) * var(--tree-indent));
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--color-border-soft) 0 1px,
+    transparent 1px var(--tree-indent)
+  );
+  pointer-events: none;
+}
+
+.ws-tree__item:focus {
+  outline: none;
+}
+
+.ws-tree__item:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
 }
 
 .ws-tree__directory {
@@ -219,8 +449,9 @@
   align-items: center;
   gap: 5px;
   width: 100%;
-  height: 27px;
+  height: var(--tree-row-dir);
   padding-right: 8px;
+  padding-left: calc(8px + var(--depth, 0) * var(--tree-indent));
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -247,6 +478,16 @@
   transform: rotate(90deg);
 }
 
+.ws-tree__folder-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+}
+
+.ws-tree__folder-icon.is-open {
+  color: var(--color-accent);
+}
+
 .ws-tree__directory-name {
   min-width: 0;
   overflow: hidden;
@@ -254,13 +495,26 @@
   white-space: nowrap;
 }
 
+.ws-tree__match {
+  padding: 0 1px;
+  border-radius: 2px;
+  background: var(--color-accent-soft);
+  color: var(--color-accent-strong);
+  font-weight: 600;
+}
+
+.ws-file.is-active .ws-tree__match {
+  background: rgba(12, 102, 228, 0.22);
+}
+
 .ws-file {
   display: flex;
   align-items: center;
   gap: 7px;
-  min-height: 30px;
+  min-height: var(--tree-row-file);
   margin: 1px 0;
   padding-right: 8px;
+  padding-left: calc(8px + var(--depth, 0) * var(--tree-indent));
   border-radius: var(--radius-sm);
 }
 
@@ -315,8 +569,29 @@
 
 .ws-file__icon {
   display: inline-flex;
-  flex: 0 0 auto;
+  flex: 0 0 16px;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
   color: var(--color-text-subtle);
+}
+
+.ws-file__icon svg {
+  flex: 0 0 auto;
+  width: var(--tree-icon);
+  height: var(--tree-icon);
+}
+
+.ws-file__icon--adoc {
+  color: var(--color-file-asciidoc);
+}
+
+.ws-file__icon--markdown {
+  color: var(--color-file-markdown);
+}
+
+.ws-file__icon--text {
+  color: var(--color-file-text);
 }
 
 .ws-file.is-active .ws-file__name {
@@ -329,6 +604,7 @@
 }
 
 .ws-file__label {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -483,6 +759,57 @@
   color: var(--color-text-muted);
   font-size: 11px;
   line-height: 1.4;
+}
+
+/* Compact density --------------------------------------------------------- */
+
+.ws-tree--compact .ws-tree__directory {
+  gap: 4px;
+  padding-right: 6px;
+  font-size: 12px;
+}
+
+.ws-tree--compact .ws-file {
+  gap: 5px;
+  margin: 0;
+  padding-right: 6px;
+}
+
+.ws-tree--compact .ws-file__name {
+  gap: 4px;
+  height: 22px;
+  font-size: 12.5px;
+}
+
+.ws-tree--compact .ws-file__checkbox input {
+  width: 12px;
+  height: 12px;
+}
+
+.ws-tree--compact .ws-tree__chevron svg {
+  width: 10px;
+  height: 10px;
+}
+
+.ws-tree--compact .ws-tree__folder-icon svg {
+  width: var(--tree-icon);
+  height: var(--tree-icon);
+}
+
+.ws-tree--compact .ws-file__slot,
+.ws-tree--compact .ws-file__draft {
+  flex: 0 0 auto;
+}
+
+@media (pointer: coarse) {
+  .ws-tree--compact .ws-tree__directory,
+  .ws-tree--compact .ws-file {
+    min-height: 32px;
+  }
+
+  .ws-tree--compact .ws-tree__directory {
+    height: auto;
+  }
 }
 
 /* Shared controls --------------------------------------------------------- */
@@ -702,8 +1029,20 @@
 }
 
 @media (max-width: 900px) {
-  .workspace-shell {
+  .workspace-shell,
+  .workspace-shell.is-sidebar-collapsed {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* The mobile layout is a drawer; collapsed state does not apply here. */
+  .workspace-shell.is-sidebar-collapsed .ws-sidebar {
+    display: flex;
+  }
+
+  .ws-rail,
+  .ws-sidebar__resizer,
+  .ws-folder__collapse {
+    display: none;
   }
 
   .ws-sidebar {

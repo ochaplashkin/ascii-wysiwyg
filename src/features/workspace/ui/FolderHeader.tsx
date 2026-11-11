@@ -6,6 +6,8 @@ export interface FolderHeaderProps {
   directory: LocalDirectory | null;
   picking: boolean;
   onChoose: () => void;
+  /** Desktop "collapse the whole sidebar" action. */
+  onCollapse?: (() => void) | undefined;
 }
 
 /** App name plus the currently opened folder and its "change folder" action. */
@@ -13,6 +15,7 @@ export function FolderHeader({
   directory,
   picking,
   onChoose,
+  onCollapse,
 }: FolderHeaderProps) {
   return (
     <header className="ws-folder">
@@ -24,12 +27,24 @@ export function FolderHeader({
           <span className="ws-brand__title">AsciiDoc</span>
           <span className="ws-brand__subtitle">рабочая область</span>
         </span>
+
+        {onCollapse ? (
+          <button
+            type="button"
+            className="ws-folder__collapse"
+            onClick={onCollapse}
+            aria-label="Свернуть панель файлов"
+            title="Свернуть панель файлов"
+          >
+            <Icon name="sidebarCollapse" size={16} />
+          </button>
+        ) : null}
       </div>
 
       {directory ? (
         <div className="ws-folder__row">
           <span className="ws-folder__icon" aria-hidden="true">
-            <Icon name="folder" size={16} />
+            <Icon name="folderOpen" size={16} />
           </span>
           <span className="ws-folder__name" title={directory.name}>
             {directory.name}

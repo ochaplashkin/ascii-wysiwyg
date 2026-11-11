@@ -1,4 +1,12 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
 
 import type { SourceDoc, SourcePair } from '../shared/model/types.js';
 import { Icon } from '../shared/ui/icons.js';
@@ -13,9 +21,15 @@ import {
   type FileSlot,
 } from '../features/workspace/model/file-selection.js';
 import { listDraftPaths } from '../features/workspace/model/drafts.js';
+import {
+  readStoredSidebarWidth,
+  storeSidebarWidth,
+} from '../features/workspace/model/sidebar-layout.js';
 import { useDirectorySession } from '../features/workspace/model/useDirectorySession.js';
 import { useDocumentSession } from '../features/workspace/model/useDocumentSession.js';
 import { EmptyWorkspace } from '../features/workspace/ui/EmptyWorkspace.js';
+import { SidebarRail } from '../features/workspace/ui/SidebarRail.js';
+import { SidebarResizer } from '../features/workspace/ui/SidebarResizer.js';
 import { WorkspaceSidebar } from '../features/workspace/ui/WorkspaceSidebar.js';
 
 const LazyCompareView = lazy(
@@ -38,11 +52,17 @@ export function Workspace() {
   const [compareError, setCompareError] = useState<string | null>(null);
   const [comparing, setComparing] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(() =>
+    readStoredSidebarWidth(),
+  );
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [draftPaths, setDraftPaths] = useState<ReadonlySet<string>>(
     () => new Set<string>(),
   );
 
   const compareInFlightRef = useRef(false);
+  const railButtonRef = useRef<HTMLButtonElement>(null);
+  const wasCollapsedRef = useRef(false);
 
   const activeFile = activePath
     ? (directorySession.files.get(activePath) ?? null)
@@ -175,10 +195,42 @@ export function Workspace() {
     setComparePair(null);
   }, []);
 
+  const changeSidebarWidth = useCallback((width: number) => {
+    setSidebarWidth(width);
+  }, []);
+
+  const commitSidebarWidth = useCallback((width: number) => {
+    setSidebarWidth(width);
+    storeSidebarWidth(width);
+  }, []);
+
+  const collapseSidebar = useCallback(() => setSidebarCollapsed(true), []);
+  const expandSidebar = useCallback(() => setSidebarCollapsed(false), []);
+
+  // Focus follows the panel state: the rail button after collapsing, the
+  // previously focused tree row (or the first control) after expanding.
+  useEffect(() => {
+    if (sidebarCollapsed) {
+      railButtonRef.current?.focus();
+    } else if (wasCollapsedRef.current) {
+      const sidebar = document.getElementById('workspace-sidebar');
+      const target =
+        sidebar?.querySelector<HTMLElement>('[role="treeitem"][tabindex="0"]') ??
+        sidebar?.querySelector<HTMLElement>('.ws-search input') ??
+        sidebar?.querySelector<HTMLElement>('button, input');
+      target?.focus();
+    }
+
+    wasCollapsedRef.current = sidebarCollapsed;
+  }, [sidebarCollapsed]);
+
   const hasDirectory = directorySession.directory !== null;
 
   return (
-    <div className="workspace-shell">
+    <div
+      className={`workspace-shell${sidebarCollapsed ? ' is-sidebar-collapsed' : ''}`}
+      style={{ '--sidebar-width': `${sidebarWidth}px` } as CSSProperties}
+    >
       <WorkspaceSidebar
         directorySession={directorySession}
         selection={selection}
@@ -194,7 +246,19 @@ export function Workspace() {
         onCompare={() => void compare()}
         compareError={compareError}
         onDismissCompareError={() => setCompareError(null)}
+        onCollapseSidebar={collapseSidebar}
+        resizer={
+          <SidebarResizer
+            width={sidebarWidth}
+            onChange={changeSidebarWidth}
+            onCommit={commitSidebarWidth}
+          />
+        }
       />
+
+      {sidebarCollapsed ? (
+        <SidebarRail onExpand={expandSidebar} buttonRef={railButtonRef} />
+      ) : null}
 
       {sidebarOpen ? (
         <button

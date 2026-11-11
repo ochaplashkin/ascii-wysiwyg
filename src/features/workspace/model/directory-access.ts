@@ -14,6 +14,12 @@ export interface LocalFile {
 export interface LocalDirectory {
   name: string;
   files: LocalFile[];
+  /**
+   * Paths of every walked directory, including empty ones. The legacy
+   * `<input webkitdirectory>` fallback cannot see empty folders and returns
+   * an empty list.
+   */
+  directories: string[];
   /** True when the directory holds more files than the walk collected. */
   truncated: boolean;
 }
@@ -114,6 +120,7 @@ const readHandleText = async (handle: ReadableFileHandle): Promise<string> => {
 
 interface WalkState {
   files: LocalFile[];
+  directories: string[];
   truncated: boolean;
 }
 
@@ -151,6 +158,9 @@ const collectFiles = async (
 
       if (isDirectoryEntry(entry)) {
         if (depth < MAX_DEPTH) {
+          // Record the folder before walking it: an unreadable folder still
+          // belongs in the tree, it is just shown empty.
+          state.directories.push(path);
           await collectFiles(entry, path, depth + 1, state);
         }
       } else if (isSupportedFile(entry.name)) {
@@ -248,6 +258,9 @@ const pickDirectoryWithInput = (): Promise<LocalDirectory | null> => {
       finish({
         name: rootName,
         files,
+        // `<input webkitdirectory>` only reports files, so empty folders are
+        // invisible in this fallback.
+        directories: [],
         truncated: selected.length > MAX_FILES,
       });
     };
@@ -289,12 +302,13 @@ export async function pickLocalDirectory(): Promise<LocalDirectory | null> {
     throw reason;
   }
 
-  const state: WalkState = { files: [], truncated: false };
+  const state: WalkState = { files: [], directories: [], truncated: false };
   await collectFiles(root, '', 0, state);
 
   return {
     name: root.name || 'Папка',
     files: state.files,
+    directories: state.directories,
     truncated: state.truncated,
   };
 }
