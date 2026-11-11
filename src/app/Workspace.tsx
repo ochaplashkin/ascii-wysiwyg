@@ -20,7 +20,11 @@ import {
   type FileSelection,
   type FileSlot,
 } from '../features/workspace/model/file-selection.js';
-import { listDraftPaths } from '../features/workspace/model/drafts.js';
+import {
+  hashText,
+  listDraftPaths,
+  loadDraft,
+} from '../features/workspace/model/drafts.js';
 import {
   readStoredSidebarWidth,
   storeSidebarWidth,
@@ -115,6 +119,25 @@ export function Workspace() {
     documentState.session?.source,
     documentState.session?.diskText,
   ]);
+
+  // Referenced diagrams must use the same text the editor shows. The app
+  // never writes to disk, so a puml edit lives in a draft; prefer that draft
+  // when it was created from the current disk revision.
+  const readAsset = useCallback(
+    async (path: string): Promise<string> => {
+      const diskText = await directorySession.readFile(path);
+      const draft = loadDraft(folderName, path);
+      if (
+        draft &&
+        draft.baseHash === hashText(diskText) &&
+        draft.text !== diskText
+      ) {
+        return draft.text;
+      }
+      return diskText;
+    },
+    [directorySession.readFile, folderName],
+  );
 
   const openFile = useCallback((path: string) => {
     setActivePath(path);
@@ -301,6 +324,7 @@ export function Workspace() {
               onSwap={swapComparedPair}
               onClose={closeCompare}
               onOpenFile={openFile}
+              readAsset={readAsset}
             />
           </Suspense>
         ) : activeFile ? (
@@ -309,6 +333,7 @@ export function Workspace() {
             file={activeFile}
             folderName={folderName}
             sessionState={documentState}
+            readAsset={readAsset}
           />
         ) : (
           <EmptyWorkspace

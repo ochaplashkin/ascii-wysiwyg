@@ -8,6 +8,8 @@ export interface FileRowProps {
   active: boolean;
   slot: FileSlot | null;
   locked: boolean;
+  /** AsciiDoc documents can be compared; PlantUML files cannot. */
+  comparable: boolean;
   hasDraft: boolean;
   query: string;
   onOpen: (path: string) => void;
@@ -29,16 +31,21 @@ export function FileRow({
   active,
   slot,
   locked,
+  comparable,
   hasDraft,
   query,
   onOpen,
   onToggle,
 }: FileRowProps) {
-  const checkboxTitle = locked
-    ? 'Сначала снимите один из выбранных файлов'
-    : slot
-      ? `Убрать «${name}» из сравнения`
-      : `Отметить «${name}» для сравнения`;
+  const compareDisabled = !comparable || locked;
+
+  const checkboxTitle = !comparable
+    ? 'PlantUML-диаграммы не участвуют в сравнении'
+    : locked
+      ? 'Сначала снимите один из выбранных файлов'
+      : slot
+        ? `Убрать «${name}» из сравнения`
+        : `Отметить «${name}» для сравнения`;
 
   const label = query.trim().length > 0 ? path : name;
 
@@ -53,13 +60,13 @@ export function FileRow({
         .join(' ')}
     >
       <label
-        className={`ws-file__checkbox${locked ? ' is-locked' : ''}`}
+        className={`ws-file__checkbox${compareDisabled ? ' is-locked' : ''}`}
         title={checkboxTitle}
       >
         <input
           type="checkbox"
           checked={slot !== null}
-          disabled={locked}
+          disabled={compareDisabled}
           tabIndex={-1}
           onChange={() => onToggle(path)}
           aria-label={`${checkboxTitle}: ${path}`}

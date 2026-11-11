@@ -8,6 +8,8 @@ export interface EditorHeaderProps {
   folderName: string;
   mode: EditorMode;
   hasDraft: boolean;
+  /** PlantUML files have no visual mode, so the switch is hidden for them. */
+  showModeSwitch?: boolean;
   onModeChange: (mode: EditorMode) => void;
   onReloadFromDisk: () => void;
   onResetDraft: () => void;
@@ -19,6 +21,7 @@ export function EditorHeader({
   folderName,
   mode,
   hasDraft,
+  showModeSwitch = true,
   onModeChange,
   onReloadFromDisk,
   onResetDraft,
@@ -59,7 +62,9 @@ export function EditorHeader({
             Черновик
           </span>
         ) : null}
-        <ViewSwitch mode={mode} onChange={onModeChange} />
+        {showModeSwitch ? (
+          <ViewSwitch mode={mode} onChange={onModeChange} />
+        ) : null}
         <DocumentMenu
           hasDraft={hasDraft}
           onReloadFromDisk={onReloadFromDisk}

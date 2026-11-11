@@ -85,6 +85,14 @@ const DiffRowCells = memo(function DiffRowCells({
 }) {
   const inline = useMemo(() => {
     if (row.status !== 'modified' || !row.left || !row.right) return null;
+    // Diagram blocks are atomic: inline word-diffing two rendered images only
+    // produces broken markup around `<figure>`/data URLs.
+    if (
+      row.left.html.includes('adoc-puml') ||
+      row.right.html.includes('adoc-puml')
+    ) {
+      return null;
+    }
 
     try {
       return inlineDiff(row.left.html, row.right.html);

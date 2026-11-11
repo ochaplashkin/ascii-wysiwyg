@@ -18,7 +18,7 @@ dist-ssr
 # Docker-related files are not needed inside the build context
 Dockerfile
 .dockerignore
-docker-compose.yml
+docker-compose*.yml
 
 # Documentation and sample sources are not part of the bundle
 docs

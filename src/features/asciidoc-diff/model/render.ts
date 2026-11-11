@@ -1,5 +1,18 @@
 import { MemoryLogger, convert } from '@asciidoctor/core';
 
+import { beginDiagramRender } from '../../diagrams/model/asciidoctor-extension.js';
+import {
+  diagramKeyExtra,
+  diagramKeyHtml,
+  diagramWarnings,
+  hydrateDiagramHtml,
+  renderDiagramRequests,
+} from '../../diagrams/model/hydrate.js';
+import type {
+  DiagramRenderContext,
+  PlantUmlOutcome,
+  PlantUmlRequest,
+} from '../../diagrams/model/types.js';
 import { prefixHtmlIds, sanitizeHtml } from './sanitize.js';
 
 export type BlockKind = 'title' | 'heading' | 'block';
@@ -56,7 +69,55 @@ const collectWarnings = (
 export interface RenderOptions {
   /** Prefix for element ids; keeps anchors of the two columns unique. */
   idPrefix?: string;
+  /** Directory of the source document, used to resolve `plantuml::` targets. */
+  baseDir?: string;
+  /** Reads a referenced file (a `.puml` diagram) from the picked folder. */
+  readAsset?: (path: string) => Promise<string>;
+  /** Kroki base URL; `null`/absent renders diagrams as an error fallback. */
+  krokiUrl?: string | null;
 }
+
+const diagramContext = (options: RenderOptions): DiagramRenderContext => ({
+  baseDir: options.baseDir ?? '',
+  readAsset: options.readAsset ?? null,
+  krokiUrl: options.krokiUrl ?? null,
+});
+
+/**
+ * Runs one Asciidoctor conversion with the PlantUML macro extension and
+ * renders every collected request through Kroki.
+ *
+ * The extension only records requests and emits pass-block placeholders, so
+ * conversion stays synchronous/consistent while I/O happens afterwards.
+ */
+const convertWithDiagrams = async (
+  source: string,
+  logger: ReturnType<typeof MemoryLogger.create>,
+  options: RenderOptions,
+): Promise<{ converted: string; outcomes: PlantUmlOutcome[] }> => {
+  const diagram = beginDiagramRender();
+  let converted: unknown;
+  let requests: PlantUmlRequest[] = [];
+
+  try {
+    converted = await convert(source, {
+      safe: 'safe',
+      standalone: true,
+      logger,
+      extension_registry: diagram.registry,
+      attributes: { 'adoc-diagram-render-id': diagram.renderId },
+    });
+  } finally {
+    requests = diagram.take();
+  }
+
+  if (typeof converted !== 'string') {
+    throw new Error('Asciidoctor did not return HTML');
+  }
+
+  const outcomes = await renderDiagramRequests(requests, diagramContext(options));
+  return { converted, outcomes };
+};
 
 const BLOCK_SELECTOR = [
   '.paragraph',
@@ -79,6 +140,7 @@ const BLOCK_SELECTOR = [
   '.videoblock',
   '.audioblock',
   '.stemblock',
+  '.adoc-puml',
 ].join(',');
 
 const CONTAINER_SELECTOR = [
@@ -107,30 +169,32 @@ const normalizeText = (value: string | null) =>
  */
 export async function renderAsciiDoc(
   source: string,
-  { idPrefix = 'doc' }: RenderOptions = {},
+  options: RenderOptions = {},
 ): Promise<RenderResult> {
+  const { idPrefix = 'doc' } = options;
   const logger = MemoryLogger.create();
-  const converted = await convert(source, {
-    safe: 'safe',
-    standalone: true,
+  const { converted, outcomes } = await convertWithDiagrams(
+    source,
     logger,
-  });
-
-  if (typeof converted !== 'string') {
-    throw new Error('Asciidoctor did not return HTML');
-  }
+    options,
+  );
 
   const doc = new DOMParser().parseFromString(converted, 'text/html');
   const blocks: RenderBlock[] = [];
 
   const pushBlock = (element: Element, kind: BlockKind) => {
     const clean = sanitizeHtml(element.outerHTML);
+    // Diagram source is part of the key, so an edited `.puml` file counts as
+    // a change even when the macro line is unchanged.
+    const keyHtml = diagramKeyHtml(clean, outcomes);
+    const keyExtra = diagramKeyExtra(clean, outcomes);
+    const hydrated = hydrateDiagramHtml(clean, outcomes);
 
     blocks.push({
       id: `${idPrefix}-block-${blocks.length}`,
       kind,
-      html: prefixHtmlIds(clean, idPrefix),
-      key: `${kind}\u0000${clean.trim()}`,
+      html: prefixHtmlIds(hydrated, idPrefix),
+      key: `${kind}\u0000${keyHtml.trim()}${keyExtra}`,
       text: normalizeText(element.textContent),
     });
   };
@@ -190,7 +254,7 @@ export async function renderAsciiDoc(
     Array.from(content.children).forEach(walk);
   }
 
-  const warnings = collectWarnings(logger);
+  const warnings = [...collectWarnings(logger), ...diagramWarnings(outcomes)];
 
   return { blocks, warnings };
 }
@@ -204,17 +268,14 @@ export async function renderAsciiDoc(
  */
 export async function renderAsciiDocPreview(
   source: string,
+  options: RenderOptions = {},
 ): Promise<PreviewResult> {
   const logger = MemoryLogger.create();
-  const converted = await convert(source, {
-    safe: 'safe',
-    standalone: true,
+  const { converted, outcomes } = await convertWithDiagrams(
+    source,
     logger,
-  });
-
-  if (typeof converted !== 'string') {
-    throw new Error('Asciidoctor did not return HTML');
-  }
+    options,
+  );
 
   const doc = new DOMParser().parseFromString(converted, 'text/html');
   const header = doc.getElementById('header');
@@ -227,7 +288,7 @@ export async function renderAsciiDocPreview(
   }`;
 
   return {
-    html: sanitizeHtml(raw),
-    warnings: collectWarnings(logger),
+    html: hydrateDiagramHtml(sanitizeHtml(raw), outcomes),
+    warnings: [...collectWarnings(logger), ...diagramWarnings(outcomes)],
   };
 }

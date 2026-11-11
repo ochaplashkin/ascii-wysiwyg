@@ -50,7 +50,7 @@ export function PreviewPane({ state, hasLocalResources }: PreviewPaneProps) {
 
         {warnings.length > 0 ? (
           <div className="se-warnings" role="status">
-            <strong>Сообщения Asciidoctor</strong>
+            <strong>Сообщения</strong>
             <ul>
               {visibleWarnings.map((warning, index) => (
                 <li key={`${warning.line ?? 'x'}-${index}`}>

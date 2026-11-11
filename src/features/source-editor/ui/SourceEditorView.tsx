@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import {
   Button,
@@ -9,8 +9,14 @@ import {
   DialogTitle,
 } from '@mui/material';
 
+import type { RenderOptions } from '../../asciidoc-diff/model/render.js';
 import { Icon } from '../../../shared/ui/icons.js';
 import { StatusBar } from '../../../shared/ui/StatusBar.js';
+import { isDiagramFile } from '../../diagrams/model/file-types.js';
+import { readKrokiUrl } from '../../diagrams/model/kroki-url.js';
+import { dirnamePath } from '../../diagrams/model/path.js';
+import { KrokiLinkButton } from '../../diagrams/ui/KrokiLinkButton.js';
+import { PlantUmlPreview } from '../../diagrams/ui/PlantUmlPreview.js';
 import type { DocumentSessionState } from '../../workspace/model/useDocumentSession.js';
 import type { LocalFile } from '../../workspace/model/directory-access.js';
 import { sourceStats } from '../model/stats.js';
@@ -31,6 +37,8 @@ export interface SourceEditorViewProps {
   file: LocalFile;
   folderName: string;
   sessionState: DocumentSessionState;
+  /** Reads referenced `.puml` files for `plantuml::...[]` in the preview. */
+  readAsset?: (path: string) => Promise<string>;
 }
 
 const matchesNarrow = (): boolean => {
@@ -45,8 +53,22 @@ export function SourceEditorView({
   file,
   folderName,
   sessionState,
+  readAsset,
 }: SourceEditorViewProps) {
   const { session, loading, error, actions } = sessionState;
+
+  // Build-time endpoint (or a stored override); `null` hides the Kroki link.
+  const krokiUrl = useMemo(() => readKrokiUrl(), []);
+  const isDiagram = isDiagramFile(file.name);
+
+  const previewOptions = useMemo(() => {
+    const options: RenderOptions = {
+      baseDir: dirnamePath(file.path),
+      krokiUrl,
+    };
+    if (readAsset) options.readAsset = readAsset;
+    return options;
+  }, [file.path, krokiUrl, readAsset]);
 
   const [mode, setMode] = useState<EditorMode>('source');
   const [mobilePane, setMobilePane] = useState<'source' | 'preview'>('source');
@@ -71,15 +93,20 @@ export function SourceEditorView({
     return () => media.removeEventListener('change', handler);
   }, []);
 
-  const previewEnabled = mode === 'source' && (!narrow || mobilePane === 'preview');
-  const preview = usePreview(session?.source ?? '', previewEnabled);
+  const previewEnabled =
+    !isDiagram && mode === 'source' && (!narrow || mobilePane === 'preview');
+  const preview = usePreview(
+    session?.source ?? '',
+    previewEnabled,
+    previewOptions,
+  );
 
   const sessionReady =
     session !== null && session.path === file.path && !loading;
 
   const switchMode = useCallback(
     (next: EditorMode) => {
-      if (next === mode) return;
+      if (isDiagram || next === mode) return;
 
       if (next === 'visual') {
         if (!session) return;
@@ -100,7 +127,7 @@ export function SourceEditorView({
       }
       setMode('source');
     },
-    [mode, session, visualBaseline, visualDirty],
+    [isDiagram, mode, session, visualBaseline, visualDirty],
   );
 
   useEffect(() => {
@@ -113,7 +140,7 @@ export function SourceEditorView({
         return;
       }
 
-      if (mod && event.key === '/') {
+      if (mod && event.key === '/' && !isDiagram) {
         event.preventDefault();
         switchMode(mode === 'source' ? 'visual' : 'source');
       }
@@ -121,7 +148,7 @@ export function SourceEditorView({
 
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [actions, mode, switchMode]);
+  }, [actions, isDiagram, mode, switchMode]);
 
   const startResize = (event: ReactPointerEvent<HTMLDivElement>) => {
     const container = splitRef.current;
@@ -228,6 +255,7 @@ export function SourceEditorView({
         folderName={folderName}
         mode={mode}
         hasDraft={dirty}
+        showModeSwitch={!isDiagram}
         onModeChange={switchMode}
         onReloadFromDisk={() => void reloadFromDisk()}
         onResetDraft={resetDraft}
@@ -294,7 +322,7 @@ export function SourceEditorView({
         />
       ) : null}
 
-      {mode === 'visual' ? (
+      {mode === 'visual' && !isDiagram ? (
         <Suspense
           fallback={
             <div className="se-loading" role="status">
@@ -354,6 +382,10 @@ export function SourceEditorView({
                 onChange={actions.setSource}
                 onSave={actions.saveNow}
                 memoryKey={file.path}
+                ariaLabel={
+                  isDiagram ? 'PlantUML-исходник' : 'AsciiDoc-исходник'
+                }
+                language={isDiagram ? 'plain' : 'asciidoc'}
               />
             </section>
 
@@ -381,10 +413,18 @@ export function SourceEditorView({
               />
             ) : null}
 
-            <PreviewPane
-              state={preview}
-              hasLocalResources={LOCAL_RESOURCE_RE.test(session.source)}
-            />
+            {isDiagram ? (
+              <PlantUmlPreview
+                source={session.source}
+                url={krokiUrl}
+                enabled={!narrow || mobilePane === 'preview'}
+              />
+            ) : (
+              <PreviewPane
+                state={preview}
+                hasLocalResources={LOCAL_RESOURCE_RE.test(session.source)}
+              />
+            )}
           </div>
         </>
       )}
@@ -394,6 +434,7 @@ export function SourceEditorView({
         words={stats.words}
         characters={stats.characters}
         saveStatus={session.status}
+        actions={krokiUrl ? <KrokiLinkButton url={krokiUrl} /> : null}
       />
 
       <Dialog

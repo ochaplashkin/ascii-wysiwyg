@@ -7,6 +7,7 @@ import {
   countFiles,
   fileCountLabel,
   filterTree,
+  isEditableFile,
   isSupportedFile,
   type DirectoryNode,
   type TreeNode,
@@ -42,6 +43,20 @@ describe('isSupportedFile', () => {
     expect(isSupportedFile('adoc')).toBe(false);
     expect(isSupportedFile('.adoc')).toBe(false);
     expect(isSupportedFile('notes.')).toBe(false);
+  });
+});
+
+describe('isEditableFile', () => {
+  it('accepts AsciiDoc documents and PlantUML sources', () => {
+    expect(isEditableFile('guide.adoc')).toBe(true);
+    expect(isEditableFile('notes.txt')).toBe(true);
+    expect(isEditableFile('flow.puml')).toBe(true);
+    expect(isEditableFile('FLOW.PLANTUML')).toBe(true);
+  });
+
+  it('keeps PlantUML out of the comparable documents', () => {
+    expect(isSupportedFile('flow.puml')).toBe(false);
+    expect(isEditableFile('photo.png')).toBe(false);
   });
 });
 

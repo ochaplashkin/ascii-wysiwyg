@@ -86,7 +86,13 @@ const actions: DocumentSessionActions = {
   retry: vi.fn(),
 };
 
-function Harness({ initial = createSession() }: { initial?: DocumentSession }) {
+function Harness({
+  initial = createSession(),
+  targetFile = file,
+}: {
+  initial?: DocumentSession;
+  targetFile?: LocalFile;
+}) {
   const [session, setSession] = useState<DocumentSession | null>(initial);
 
   const nextActions = useMemo<DocumentSessionActions>(
@@ -109,7 +115,11 @@ function Harness({ initial = createSession() }: { initial?: DocumentSession }) {
   };
 
   return (
-    <SourceEditorView file={file} folderName="docs" sessionState={state} />
+    <SourceEditorView
+      file={targetFile}
+      folderName="docs"
+      sessionState={state}
+    />
   );
 }
 
@@ -135,6 +145,8 @@ describe('SourceEditorView', () => {
     await act(async () => root.unmount());
     container.remove();
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
   it('renders source, preview, stats and the draft badge', async () => {
@@ -149,6 +161,65 @@ describe('SourceEditorView', () => {
     expect(container.textContent).toContain('Предпросмотр');
     expect(container.textContent).toContain('Строк:');
     expect(container.textContent).toContain('Диск не меняется');
+  });
+
+  it('shows the Kroki link when the endpoint is configured', async () => {
+    vi.stubEnv('VITE_KROKI_URL', '/kroki');
+    // Keep the health probe pending so the test only asserts the markup.
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})));
+
+    await act(async () => root.render(<Harness />));
+
+    const link = container.querySelector<HTMLAnchorElement>('.se-kroki-link');
+    expect(link).not.toBeNull();
+    expect(link?.getAttribute('href')).toBe('/kroki/');
+    expect(link?.getAttribute('target')).toBe('_blank');
+    expect(link?.getAttribute('rel')).toBe('noopener noreferrer');
+  });
+
+  it('opens a .puml file with a live diagram preview and no visual mode', async () => {
+    vi.stubEnv('VITE_KROKI_URL', '/kroki');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          '<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10"/></svg>',
+          {
+            status: 200,
+            headers: { 'Content-Type': 'image/svg+xml' },
+          },
+        ),
+      ),
+    );
+
+    const pumlFile: LocalFile = {
+      path: 'diagrams/flow.puml',
+      name: 'flow.puml',
+      read: async () => '@startuml\nAlice -> Bob\n@enduml',
+    };
+    const pumlSource = '@startuml\nAlice -> Bob\n@enduml';
+
+    await act(async () =>
+      root.render(
+        <Harness
+          targetFile={pumlFile}
+          initial={createSession({
+            path: pumlFile.path,
+            diskText: pumlSource,
+            source: pumlSource,
+            savedSource: pumlSource,
+          })}
+        />,
+      ),
+    );
+    await act(async () => {
+      await new Promise((resolve) => window.setTimeout(resolve, 400));
+    });
+
+    expect(container.querySelector('.se-puml')).not.toBeNull();
+    expect(container.querySelector('.se-puml__image')).not.toBeNull();
+    expect(container.textContent).toContain('Диаграмма');
+    expect(container.textContent).not.toContain('Визуально');
   });
 
   it('switches to visual mode without normalizing an untouched document', async () => {

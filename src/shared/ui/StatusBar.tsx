@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 import type { SaveStatus } from '../model/types.js';
 import { SAVE_STATUS_LABEL } from '../model/types.js';
 
@@ -6,6 +8,8 @@ export interface StatusBarProps {
   words: number;
   characters: number;
   saveStatus: SaveStatus;
+  /** Service links/actions rendered before the save status. */
+  actions?: ReactNode;
 }
 
 /** Bottom bar shared by the source and visual editors. */
@@ -14,6 +18,7 @@ export function StatusBar({
   words,
   characters,
   saveStatus,
+  actions,
 }: StatusBarProps) {
   return (
     <footer className="se-statusbar" aria-label="Состояние документа">
@@ -38,6 +43,10 @@ export function StatusBar({
       </span>
 
       <span className="se-statusbar__spacer" />
+
+      {actions !== null && actions !== undefined ? (
+        <span className="se-statusbar__actions">{actions}</span>
+      ) : null}
 
       <span
         className={`se-statusbar__save is-${saveStatus}`}

@@ -223,6 +223,51 @@
   height: auto;
 }
 
+/* PlantUML diagrams rendered through Kroki and hydrated after sanitization. */
+.adoc-rendered .adoc-puml {
+  margin: 0 0 1.25em;
+  text-align: center;
+}
+
+.adoc-rendered .adoc-puml__image {
+  max-width: 100%;
+  height: auto;
+}
+
+.adoc-rendered .adoc-puml figcaption {
+  margin-top: 0.4em;
+  color: #57606a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+  font-size: 0.85em;
+  font-style: italic;
+}
+
+.adoc-rendered .adoc-puml--error,
+.adoc-rendered .adoc-puml--unresolved {
+  padding: 10px 12px;
+  border-left: 3px solid #cf222e;
+  background: #fff5f5;
+  text-align: left;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial,
+    sans-serif;
+}
+
+.adoc-rendered .adoc-puml__error {
+  margin: 0 0 0.4em;
+  color: #cf222e;
+  font-size: 0.9em;
+}
+
+.adoc-rendered .adoc-puml__source {
+  margin: 0;
+  padding: 8px 10px;
+  overflow: auto;
+  background: #f6f8fa;
+  border-radius: 4px;
+  font-size: 0.82em;
+}
+
 .adoc-rendered hr {
   margin: 1em 0;
   border: 0;

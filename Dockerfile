@@ -22,6 +22,12 @@ RUN npm ci --include=dev --no-audit --no-fund
 
 # Copy the sources and build the production bundle (Vite -> /app/dist).
 COPY . .
+
+# Same-origin Kroki endpoint baked into the SPA. Keep the default in sync with
+# the `/kroki/` proxy location in nginx.conf and KROKI_PUBLIC_URL in compose.
+ARG VITE_KROKI_URL=/kroki
+ENV VITE_KROKI_URL=${VITE_KROKI_URL}
+
 RUN npm run build
 
 # ---------------------------------------------------------------------------

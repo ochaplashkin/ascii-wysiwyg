@@ -28,6 +28,7 @@
   /* File-type icon accents in the sidebar tree. */
   --color-file-asciidoc: var(--color-accent);
   --color-file-markdown: #7a5af8;
+  --color-file-plantuml: #b45309;
   --color-file-text: var(--color-text-subtle);
 
   --font-sans:

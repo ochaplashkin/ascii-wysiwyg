@@ -9,7 +9,11 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from 'react';
 
-import { ancestorPaths, type TreeNode } from '../model/directory-tree.js';
+import {
+  ancestorPaths,
+  isSupportedFile,
+  type TreeNode,
+} from '../model/directory-tree.js';
 import {
   canToggle,
   slotFor,
@@ -197,6 +201,7 @@ export function FileTree({
           onToggleDirectory(row.node.path);
           return;
         }
+        if (!isSupportedFile(row.node.name)) return;
         if (!canToggle(selection, row.node.path)) return;
         onToggleFile(row.node.path);
         return;
@@ -263,6 +268,7 @@ export function FileTree({
                 active={isActive}
                 slot={slotFor(selection, node.path)}
                 locked={!canToggle(selection, node.path)}
+                comparable={isSupportedFile(node.name)}
                 hasDraft={draftPaths.has(node.path)}
                 query={query}
                 onOpen={onOpenFile}

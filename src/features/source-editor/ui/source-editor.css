@@ -560,6 +560,46 @@ body.is-resizing-columns {
   color: var(--color-removed);
 }
 
+/* PlantUML preview -------------------------------------------------------- */
+
+.se-puml__scroll {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.se-puml__canvas {
+  max-width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-border-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.se-puml__image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.se-puml .se-message,
+.se-puml .se-message--error {
+  width: 100%;
+}
+
+.se-puml__hint {
+  margin-top: 4px !important;
+  color: var(--color-text-subtle);
+  font-size: 12px;
+}
+
+.se-pane-head__hint .ws-spinner {
+  width: 12px;
+  height: 12px;
+  margin-right: 4px;
+}
+
 /* Status bar -------------------------------------------------------------- */
 
 .se-statusbar {
@@ -608,6 +648,75 @@ body.is-resizing-columns {
   color: var(--color-text-subtle);
   font-size: 10.5px;
   white-space: nowrap;
+}
+
+.se-statusbar__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Service link in the status bar (Kroki). -------------------------------- */
+
+.se-kroki-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text-strong);
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.se-kroki-link:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.se-kroki-link:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.se-kroki-link__dot {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-text-subtle);
+}
+
+.se-kroki-link__dot[data-health='checking'] {
+  background: var(--color-warning);
+  animation: se-kroki-pulse 1.2s ease-in-out infinite;
+}
+
+.se-kroki-link__dot[data-health='ok'] {
+  background: var(--color-success);
+}
+
+.se-kroki-link__dot[data-health='error'] {
+  background: var(--color-danger);
+}
+
+@keyframes se-kroki-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .se-kroki-link__dot[data-health='checking'] {
+    animation: none;
+  }
 }
 
 /* Buttons and utility states ---------------------------------------------- */
@@ -744,6 +853,15 @@ body.is-resizing-columns {
 
   .se-normalization__actions .se-button {
     flex: 1 1 auto;
+  }
+
+  /* Keep the service link reachable, but icon-only on very narrow screens. */
+  .se-kroki-link__label {
+    display: none;
+  }
+
+  .se-kroki-link {
+    padding: 0 6px;
   }
 }
 

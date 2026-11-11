@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+import type { RenderOptions } from '../../asciidoc-diff/model/render.js';
 import { renderPreview } from './preview.js';
 import type { PreviewResult } from './preview.js';
 
@@ -23,13 +24,22 @@ const errorMessage = (reason: unknown): string =>
 /**
  * Debounced preview rendering with stale-response protection: only the latest
  * request may update the state, even when an older conversion resolves later.
+ *
+ * Render options are compared by their primitives (directory, asset reader and
+ * Kroki endpoint), so callers do not have to memoize the options object.
  */
-export function usePreview(source: string, enabled = true): PreviewState {
+export function usePreview(
+  source: string,
+  enabled = true,
+  options: RenderOptions = {},
+): PreviewState {
   const [state, setState] = useState<PreviewState>({
     ...EMPTY,
     loading: enabled,
   });
   const requestRef = useRef(0);
+
+  const { baseDir, readAsset, krokiUrl } = options;
 
   useEffect(() => {
     if (!enabled) return;
@@ -44,8 +54,13 @@ export function usePreview(source: string, enabled = true): PreviewState {
     requestRef.current = requestId;
     setState((previous) => ({ ...previous, loading: true, error: null }));
 
+    const renderOptions: RenderOptions = {};
+    if (baseDir !== undefined) renderOptions.baseDir = baseDir;
+    if (readAsset !== undefined) renderOptions.readAsset = readAsset;
+    if (krokiUrl !== undefined) renderOptions.krokiUrl = krokiUrl;
+
     const timer = window.setTimeout(() => {
-      void renderPreview(source)
+      void renderPreview(source, renderOptions)
         .then((result) => {
           if (requestRef.current !== requestId) return;
           setState({
@@ -65,7 +80,7 @@ export function usePreview(source: string, enabled = true): PreviewState {
     }, PREVIEW_DEBOUNCE);
 
     return () => window.clearTimeout(timer);
-  }, [enabled, source]);
+  }, [baseDir, enabled, krokiUrl, readAsset, source]);
 
   return state;
 }

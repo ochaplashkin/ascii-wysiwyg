@@ -590,6 +590,10 @@ body.is-resizing-sidebar .workspace-main * {
   color: var(--color-file-markdown);
 }
 
+.ws-file__icon--puml {
+  color: var(--color-file-plantuml);
+}
+
 .ws-file__icon--text {
   color: var(--color-file-text);
 }

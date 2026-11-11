@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { Icon } from '../../../shared/ui/icons.js';
-import { SUPPORTED_EXTENSIONS, countFiles } from '../model/directory-tree.js';
+import { EDITABLE_EXTENSIONS, countFiles } from '../model/directory-tree.js';
 import { flattenTree } from '../model/tree-view.js';
 import type { DirectorySession } from '../model/useDirectorySession.js';
 import type { FileSelection, FileSlot } from '../model/file-selection.js';
@@ -214,7 +214,7 @@ export function WorkspaceSidebar({
           <div className="ws-empty-panel">
             <p>В папке нет подходящих файлов.</p>
             <p className="ws-hint">
-              Поддерживаются {SUPPORTED_EXTENSIONS.join(', ')}.
+              Поддерживаются {EDITABLE_EXTENSIONS.join(', ')}.
             </p>
             <button
               type="button"
@@ -246,7 +246,7 @@ export function WorkspaceSidebar({
             <span>{picking ? 'Открываем…' : 'Выбрать папку'}</span>
           </button>
           <p className="ws-hint">
-            Поддерживаются {SUPPORTED_EXTENSIONS.join(', ')}.
+            Поддерживаются {EDITABLE_EXTENSIONS.join(', ')}.
           </p>
           {!pickerAvailable ? (
             <p className="ws-note ws-note--warning">

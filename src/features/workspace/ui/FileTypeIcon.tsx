@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 /** Icon family for a file, derived from its extension. */
-export type FileKind = 'adoc' | 'markdown' | 'text' | 'other';
+export type FileKind = 'adoc' | 'markdown' | 'puml' | 'text' | 'other';
 
 /** Lower-case extension kind for a file name. */
 export function fileKind(name: string): FileKind {
@@ -12,6 +12,7 @@ export function fileKind(name: string): FileKind {
     return 'adoc';
   }
   if (extension === '.md') return 'markdown';
+  if (extension === '.puml' || extension === '.plantuml') return 'puml';
   if (extension === '.txt') return 'text';
   return 'other';
 }
@@ -47,6 +48,13 @@ const CONTENT: Record<FileKind, ReactNode> = {
       <path d={DOCUMENT_PATH} />
       <path d={FOLD_PATH} />
       {letter('M')}
+    </>
+  ),
+  puml: (
+    <>
+      <path d={DOCUMENT_PATH} />
+      <path d={FOLD_PATH} />
+      {letter('P')}
     </>
   ),
   text: (

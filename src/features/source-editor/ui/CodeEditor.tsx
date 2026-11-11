@@ -13,6 +13,8 @@ export interface CodeEditorProps {
   /** File path used to remember the scroll position between files. */
   memoryKey: string;
   ariaLabel?: string;
+  /** PlantUML sources use plain text highlighting. */
+  language?: 'asciidoc' | 'plain';
 }
 
 /** Scroll offsets survive file switches because the editor is reused. */
@@ -28,6 +30,7 @@ export function CodeEditor({
   onSave,
   memoryKey,
   ariaLabel = 'AsciiDoc-исходник',
+  language = 'asciidoc',
 }: CodeEditorProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewRef = useRef<EditorView | null>(null);
@@ -51,7 +54,9 @@ export function CodeEditor({
         doc: valueRef.current,
         extensions: [
           basicSetup,
-          StreamLanguage.define(asciidoc),
+          ...(language === 'asciidoc'
+            ? [StreamLanguage.define(asciidoc)]
+            : []),
           EditorView.lineWrapping,
           EditorView.contentAttributes.of({ 'aria-label': ariaLabel }),
           keymap.of([
@@ -95,7 +100,7 @@ export function CodeEditor({
       view.destroy();
       viewRef.current = null;
     };
-  }, [ariaLabel]);
+  }, [ariaLabel, language]);
 
   // Remember the outgoing file's scroll offset, then restore the incoming one.
   useEffect(() => {

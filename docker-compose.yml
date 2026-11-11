@@ -3,9 +3,50 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # Public Kroki path baked into the SPA at build time. Keep it in sync
+        # with the `/kroki/` proxy location in nginx.conf.
+        VITE_KROKI_URL: ${KROKI_PUBLIC_URL:-/kroki}
     image: ascii-wysiwyg:latest
     # The container only serves HTTP on 80. Publishing it on 0.0.0.0 makes it
     # reachable from other hosts; override HOST_PORT/HOST_BIND in .env if needed.
     ports:
       - "${HOST_BIND:-0.0.0.0}:${HOST_PORT:-8080}:80"
+    depends_on:
+      kroki:
+        # The SPA works without Kroki, but a healthy upstream avoids showing
+        # the "unavailable" state during the first minutes after a cold start.
+        condition: service_healthy
     restart: unless-stopped
+
+  # Self-hosted diagram renderer. PlantUML is bundled in the gateway image, so
+  # no separate kroki-plantuml container is needed. Mermaid is rendered locally
+  # by the SPA and intentionally not deployed here.
+  kroki:
+    image: ${KROKI_IMAGE:-yuzutech/kroki:0.36.0@sha256:de0f2fdc42e926d54706ac962aa5cfb38c5c387035a1b30d07ce297bbc37057b}
+    restart: unless-stopped
+    # Internal only: no `ports` in production. All traffic goes through nginx.
+    expose:
+      - "8000"
+    environment:
+      KROKI_SAFE_MODE: SECURE
+      KROKI_COMMAND_TIMEOUT: 15s
+      KROKI_CONVERT_TIMEOUT: 20s
+      KROKI_PLANTUML_CONVERT_TIMEOUT: 15s
+      # SECURE already blocks PlantUML !include; keep it explicit.
+      KROKI_PLANTUML_ALLOW_INCLUDE: "false"
+    # JVM + PlantUML + GraphViz need more headroom than the static web image.
+    mem_limit: ${KROKI_MEMORY_LIMIT:-1g}
+    tmpfs:
+      # PlantUML/GraphViz use /tmp; `exec` is required by the official compose
+      # example for images that place executables there.
+      - /tmp:exec
+    healthcheck:
+      # The gateway image is based on eclipse-temurin (Ubuntu), which ships
+      # both curl and wget. /health is the official liveness endpoint.
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      # JVM startup is not instant; do not count the first minute as failures.
+      start_period: 60s

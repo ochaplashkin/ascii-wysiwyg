@@ -1,0 +1,17 @@
+# Development-only override: publish Kroki on the loopback interface so the
+# Vite dev server proxy (vite.config.js) can reach it. Never use this file in
+# production — there Kroki stays internal to the compose network.
+#
+# The service definition is inherited from docker-compose.yml, so image,
+# limits, environment and healthcheck stay in sync.
+#
+# Usage:
+#   docker compose -f docker-compose.dev.yml up -d kroki
+#   VITE_KROKI_URL=/kroki npm run dev
+services:
+  kroki:
+    extends:
+      file: docker-compose.yml
+      service: kroki
+    ports:
+      - "127.0.0.1:${KROKI_HOST_PORT:-8000}:8000"

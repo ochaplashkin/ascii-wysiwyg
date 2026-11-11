@@ -2,10 +2,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, CircularProgress } from '@mui/material';
 
 import type { SourceDoc, SourcePair } from '../../../shared/model/types.js';
+import { readKrokiUrl } from '../../diagrams/model/kroki-url.js';
+import { dirnamePath } from '../../diagrams/model/path.js';
 import { buildDiffRows, diffStats, type DiffRow } from '../model/diff.js';
 import {
   renderAsciiDoc,
   type RenderBlock,
+  type RenderOptions,
   type RenderWarning,
 } from '../model/render.js';
 import { DiffGrid } from './DiffGrid.js';
@@ -28,6 +31,8 @@ export interface CompareViewProps {
   onSwap: () => void;
   onClose: () => void;
   onOpenFile: (path: string) => void;
+  /** Reads referenced `.puml` files from the picked folder. */
+  readAsset?: (path: string) => Promise<string>;
 }
 
 /**
@@ -40,11 +45,13 @@ export default function CompareView({
   onSwap,
   onClose,
   onOpenFile,
+  readAsset,
 }: CompareViewProps) {
   const sources: SourcePair = useMemo(
     () => ({ left, right }),
     [left, right],
   );
+  const krokiUrl = useMemo(() => readKrokiUrl(), []);
 
   const [rows, setRows] = useState<DiffRow[] | null>(null);
   const [warnings, setWarnings] = useState<SideWarning[]>([]);
@@ -74,9 +81,14 @@ export default function CompareView({
       let rightBlocks: RenderBlock[] = [];
 
       try {
-        const rendered = await renderAsciiDoc(sources.left.text, {
+        const leftOptions: RenderOptions = {
           idPrefix: 'left',
-        });
+          baseDir: dirnamePath(sources.left.path),
+          krokiUrl,
+        };
+        if (readAsset) leftOptions.readAsset = readAsset;
+
+        const rendered = await renderAsciiDoc(sources.left.text, leftOptions);
         leftBlocks = rendered.blocks;
         nextWarnings.push(
           ...rendered.warnings.map((warning) => ({
@@ -89,9 +101,14 @@ export default function CompareView({
       }
 
       try {
-        const rendered = await renderAsciiDoc(sources.right.text, {
+        const rightOptions: RenderOptions = {
           idPrefix: 'right',
-        });
+          baseDir: dirnamePath(sources.right.path),
+          krokiUrl,
+        };
+        if (readAsset) rightOptions.readAsset = readAsset;
+
+        const rendered = await renderAsciiDoc(sources.right.text, rightOptions);
         rightBlocks = rendered.blocks;
         nextWarnings.push(
           ...rendered.warnings.map((warning) => ({
@@ -124,7 +141,7 @@ export default function CompareView({
       setError(errorMessage(reason));
       setLoading(false);
     });
-  }, [sources]);
+  }, [krokiUrl, readAsset, sources]);
 
   const stats = useMemo(() => (rows ? diffStats(rows) : null), [rows]);
   const changeRows = useMemo(
@@ -217,7 +234,7 @@ export default function CompareView({
 
         {!error && warnings.length > 0 ? (
           <Alert severity="warning" className="adoc-diff__alert">
-            <strong>Сообщения Asciidoctor</strong>
+            <strong>Сообщения</strong>
             <ul className="adoc-diff__warning-list">
               {warnings
                 .slice(0, MAX_VISIBLE_WARNINGS)

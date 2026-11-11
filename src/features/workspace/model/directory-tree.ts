@@ -1,3 +1,8 @@
+import {
+  DIAGRAM_EXTENSIONS,
+  isDiagramFile,
+} from '../../diagrams/model/file-types.js';
+
 /** File types that can be compared as AsciiDoc. */
 export const SUPPORTED_EXTENSIONS = [
   '.adoc',
@@ -5,6 +10,12 @@ export const SUPPORTED_EXTENSIONS = [
   '.asc',
   '.txt',
   '.md',
+] as const;
+
+/** Text files the app can open: comparable documents plus PlantUML sources. */
+export const EDITABLE_EXTENSIONS = [
+  ...SUPPORTED_EXTENSIONS,
+  ...DIAGRAM_EXTENSIONS,
 ] as const;
 
 const collator = new Intl.Collator(undefined, {
@@ -38,6 +49,10 @@ export const isSupportedFile = (name: string): boolean => {
     name.slice(dot).toLowerCase(),
   );
 };
+
+/** True for files the app can open: AsciiDoc documents and PlantUML sources. */
+export const isEditableFile = (name: string): boolean =>
+  isSupportedFile(name) || isDiagramFile(name);
 
 /** Lower-case extension without the dot, or `''` when there is none. */
 const extensionOf = (name: string): string => {

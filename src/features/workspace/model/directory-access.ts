@@ -1,7 +1,4 @@
-import {
-  SUPPORTED_EXTENSIONS,
-  isSupportedFile,
-} from './directory-tree.js';
+import { isEditableFile } from './directory-tree.js';
 
 /** A text file the sidebar can read on demand. */
 export interface LocalFile {
@@ -163,7 +160,7 @@ const collectFiles = async (
           state.directories.push(path);
           await collectFiles(entry, path, depth + 1, state);
         }
-      } else if (isSupportedFile(entry.name)) {
+      } else if (isEditableFile(entry.name)) {
         state.files.push({
           path,
           name: entry.name,
@@ -250,7 +247,7 @@ const pickDirectoryWithInput = (): Promise<LocalDirectory | null> => {
         }
 
         const path = segments.join('/');
-        if (path.length === 0 || !isSupportedFile(path)) continue;
+        if (path.length === 0 || !isEditableFile(path)) continue;
 
         files.push({ path, name: file.name, read: () => file.text() });
       }

@@ -1,5 +1,5 @@
 import { Icon } from '../../../shared/ui/icons.js';
-import { SUPPORTED_EXTENSIONS } from '../model/directory-tree.js';
+import { EDITABLE_EXTENSIONS } from '../model/directory-tree.js';
 
 export interface EmptyWorkspaceProps {
   hasDirectory: boolean;
@@ -64,7 +64,7 @@ export function EmptyWorkspace({
         </button>
 
         <p className="ws-empty__meta">
-          Поддерживаются {SUPPORTED_EXTENSIONS.join(', ')}.
+          Поддерживаются {EDITABLE_EXTENSIONS.join(', ')}.
         </p>
 
         {!pickerAvailable ? (
